@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Camera Remote 3000 — Sony Imaging Edge can go to hell.</title>
+  <meta name="description" content="Camera Remote 3000. Built by one person, with hate for Sony software and love for photography. Live preview, gestures, voice control, Nanoleaf. Free tier includes a beaver.">
+  <meta property="og:title" content="Camera Remote 3000">
+  <meta property="og:description" content="Sony Imaging Edge can go to hell. We built something better.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://sonyhate3000.com/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Camera Remote 3000">
+  <meta name="twitter:description" content="Sony Imaging Edge can go to hell. We built something better.">
+  <style>
+    /* ============================================================
+       RESET & BASE
+    ============================================================ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg:           #0a0a0f;
+      --bg-card:      #12121a;
+      --bg-raised:    #1a1a28;
+      --ocean:        #00a0c8;
+      --ocean-bright: #00c8f0;
+      --amber:        #f5a623;
+      --neon-pink:    #ff2d78;
+      --teal:         #00d4aa;
+      --text:         #e8e8f0;
+      --text-muted:   #7a7a9a;
+      --text-dim:     #4a4a6a;
+      --border:       rgba(255,255,255,0.07);
+      --mono:         'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+      --sans:         -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', sans-serif;
+      --radius:       14px;
+      --radius-sm:    8px;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ============================================================
+       CURSOR BEAVER
+    ============================================================ */
+    #cursor-beaver {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      font-size: 18px;
+      opacity: 0.25;
+      transform: translate(-50%, -50%);
+      transition: opacity 0.3s;
+      will-change: transform;
+    }
+
+    /* ============================================================
+       TYPOGRAPHY
+    ============================================================ */
+    h1, h2, h3, h4 {
+      font-family: var(--sans);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    h1 { font-size: clamp(2.4rem, 6vw, 4.2rem); }
+    h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
+    h3 { font-size: 1.25rem; }
+
+    p { color: var(--text-muted); line-height: 1.75; }
+
+    code, .mono {
+      font-family: var(--mono);
+      font-size: 0.85em;
+    }
+
+    a { color: var(--ocean); text-decoration: none; }
+    a:hover { color: var(--ocean-bright); }
+
+    /* ============================================================
+       LAYOUT
+    ============================================================ */
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    section {
+      padding: 96px 0;
+    }
+
+    /* ============================================================
+       SCROLL ANIMATIONS
+    ============================================================ */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .fade-up.delay-1 { transition-delay: 0.1s; }
+    .fade-up.delay-2 { transition-delay: 0.2s; }
+    .fade-up.delay-3 { transition-delay: 0.3s; }
+    .fade-up.delay-4 { transition-delay: 0.4s; }
+    .fade-up.delay-5 { transition-delay: 0.5s; }
+
+    /* ============================================================
+       NAV
+    ============================================================ */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10, 10, 15, 0.8);
+      backdrop-filter: blur(20px) saturate(1.8);
+      -webkit-backdrop-filter: blur(20px) saturate(1.8);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--ocean);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    /* ============================================================
+       HERO
+    ============================================================ */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 0%, rgba(0,160,200,0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 80% 80%, rgba(255,45,120,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 20% 70%, rgba(245,166,35,0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* animated gradient border on hero content */
+    .hero-card {
+      position: relative;
+      border-radius: 24px;
+      padding: 3px;
+      background: linear-gradient(
+        135deg,
+        var(--ocean),
+        var(--neon-pink),
+        var(--amber),
+        var(--teal),
+        var(--ocean)
+      );
+      background-size: 300% 300%;
+      animation: gradient-shift 6s ease infinite;
+    }
+
+    @keyframes gradient-shift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .hero-card-inner {
+      background: var(--bg);
+      border-radius: 22px;
+      padding: 64px 56px;
+      text-align: center;
+    }
+
+    .hero-icon-area {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 36px;
+      border-radius: 26px;
+      background: linear-gradient(145deg, #1a2a38, #0d1a24);
+      border: 1px solid rgba(0,160,200,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 56px;
+      box-shadow:
+        0 0 0 1px rgba(0,160,200,0.1),
+        0 20px 60px rgba(0,0,0,0.6),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-icon-area::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 50%;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.06), transparent);
+      border-radius: 26px 26px 0 0;
+    }
+
+    .hero-tagline {
+      font-size: clamp(1.6rem, 4vw, 2.6rem);
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 16px;
+      letter-spacing: -0.025em;
+    }
+
+    .hero-tagline span {
+      background: linear-gradient(90deg, var(--neon-pink), var(--amber));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      margin-bottom: 48px;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero-subtitle strong {
+      color: var(--ocean);
+      font-weight: 600;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 26px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: var(--ocean);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(0,160,200,0.4);
+    }
+
+    .btn-primary:hover {
+      background: var(--ocean-bright);
+      box-shadow: 0 8px 30px rgba(0,160,200,0.5);
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.1);
+      color: var(--text);
+    }
+
+    .btn-testflight {
+      background: rgba(245,166,35,0.12);
+      color: var(--amber);
+      border: 1px solid rgba(245,166,35,0.25);
+    }
+
+    .btn-testflight:hover {
+      background: rgba(245,166,35,0.2);
+      color: var(--amber);
+    }
+
+    .hero-footnote {
+      margin-top: 24px;
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      font-family: var(--mono);
+    }
+
+    /* ============================================================
+       PARALLAX STARS
+    ============================================================ */
+    .stars {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: rgba(255,255,255,0.4);
+      border-radius: 50%;
+      animation: twinkle linear infinite;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 0.8; }
+    }
+
+    /* ============================================================
+       PLATFORM BAR
+    ============================================================ */
+    .platform-bar {
+      padding: 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-card);
+      overflow: hidden;
+    }
+
+    .platform-bar .container {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .platform-bar .container::-webkit-scrollbar { display: none; }
+
+    .platform-item {
+      flex: 1;
+      min-width: 160px;
+      padding: 28px 20px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+
+    .platform-item:last-child { border-right: none; }
+    .platform-item:hover { background: rgba(255,255,255,0.02); }
+
+    .platform-label {
+      font-size: 0.72rem;
+      font-family: var(--mono);
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+    }
+
+    .platform-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .platform-version {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--ocean);
+      word-break: break-all;
+    }
+
+    .platform-icon {
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    /* ============================================================
+       SECTION HEADERS
+    ============================================================ */
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--ocean);
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    .section-title {
+      margin-bottom: 16px;
+    }
+
+    .section-desc {
+      max-width: 560px;
+      margin-bottom: 64px;
+    }
+
+    /* ============================================================
+       FEATURES
+    ============================================================ */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,160,200,0.4), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(0,160,200,0.25);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    }
+
+    .feature-card:hover::before {
+      opacity: 1;
+    }
+
+    .feature-icon {
+      font-size: 2.2rem;
+      margin-bottom: 18px;
+      display: block;
+      line-height: 1;
+    }
+
+    .feature-card h3 {
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .feature-card p {
+      font-size: 0.9rem;
+    }
+
+    /* gesture table */
+    .gesture-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      font-size: 0.85rem;
+    }
+
+    .gesture-table tr {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .gesture-table tr:last-child {
+      border-bottom: none;
+    }
+
+    .gesture-table td {
+      padding: 7px 4px;
+      color: var(--text-muted);
+    }
+
+    .gesture-table td:first-child {
+      font-size: 1.2rem;
+      width: 36px;
+    }
+
+    .gesture-table td:last-child {
+      color: var(--text-dim);
+      font-size: 0.78rem;
+      text-align: right;
+      font-family: var(--mono);
+    }
+
+    /* beaver card */
+    .feature-card.beaver-card {
+      border-color: rgba(245,166,35,0.2);
+      background: linear-gradient(135deg, #12120a, #1a1a0d);
+    }
+
+    .feature-card.beaver-card:hover {
+      border-color: rgba(245,166,35,0.4);
+    }
+
+    .feature-card.beaver-card::before {
+      background: linear-gradient(90deg, transparent, rgba(245,166,35,0.4), transparent);
+    }
+
+    /* ============================================================
+       GANTT
+    ============================================================ */
+    .gantt-section {
+      background: linear-gradient(to bottom, var(--bg), #0c0c16, var(--bg));
+    }
+
+    .gantt-wrapper {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #1a1a2e;
+    }
+
+    .gantt-wrapper svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .gantt-caption {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      background: var(--bg-card);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .gantt-caption .progress-note {
+      color: var(--ocean);
+    }
+
+    /* ============================================================
+       BEAVER SECTION
+    ============================================================ */
+    .beaver-section {
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .beaver-hero {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .beaver-emoji-big {
+      font-size: 5rem;
+      display: block;
+      margin-bottom: 24px;
+      animation: beaver-bob 3s ease-in-out infinite;
+    }
+
+    @keyframes beaver-bob {
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
+      50% { transform: translateY(-8px) rotate(3deg); }
+    }
+
+    .tier-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .tier-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px 28px;
+      position: relative;
+    }
+
+    .tier-card.free {
+      background: var(--bg);
+    }
+
+    .tier-card.pro {
+      background: linear-gradient(145deg, #0d1a24, #0a1420);
+      border-color: rgba(0,160,200,0.35);
+    }
+
+    .tier-card.pro::after {
+      content: 'RECOMMENDED';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ocean);
+      color: #fff;
+      font-size: 0.65rem;
+      font-family: var(--mono);
+      letter-spacing: 0.12em;
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+    }
+
+    .tier-price {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.03em;
+      margin: 12px 0 4px;
+    }
+
+    .tier-price sub {
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--text-muted);
+      vertical-align: baseline;
+    }
+
+    .tier-period {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      margin-bottom: 24px;
+    }
+
+    .tier-name {
+      font-size: 0.8rem;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .tier-features {
+      list-style: none;
+      font-size: 0.88rem;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .tier-features li {
+      color: var(--text-muted);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .tier-features li span:first-child {
+      flex-shrink: 0;
+    }
+
+    .tier-features li.highlight {
+      color: var(--text);
+    }
+
+    .tier-features li.beaver-feature {
+      color: var(--amber);
+    }
+
+    .beaver-fine-print {
+      margin-top: 48px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      line-height: 1.6;
+    }
+
+    /* ============================================================
+       NEWSLETTER
+    ============================================================ */
+    .newsletter-section {
+      text-align: center;
+    }
+
+    .newsletter-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 64px 48px;
+      max-width: 600px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .newsletter-card::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(0,160,200,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .newsletter-card::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; left: -60px;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(255,45,120,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .newsletter-card h2 {
+      font-size: 1.8rem;
+      margin-bottom: 12px;
+    }
+
+    .newsletter-card p {
+      margin-bottom: 32px;
+    }
+
+    .newsletter-form {
+      display: flex;
+      gap: 10px;
+      max-width: 440px;
+      margin: 0 auto;
+    }
+
+    .newsletter-input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 18px;
+      font-size: 0.95rem;
+      color: var(--text);
+      font-family: var(--sans);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .newsletter-input:focus {
+      border-color: rgba(0,160,200,0.5);
+      box-shadow: 0 0 0 3px rgba(0,160,200,0.08);
+    }
+
+    .newsletter-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .newsletter-note {
+      margin-top: 14px;
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      font-family: var(--mono);
+    }
+
+    /* ============================================================
+       SOCIAL
+    ============================================================ */
+    .social-section {
+      padding: 64px 0;
+      text-align: center;
+    }
+
+    .social-links {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 32px;
+    }
+
+    .social-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-card);
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.15s;
+    }
+
+    .social-link:hover {
+      border-color: rgba(0,160,200,0.3);
+      color: var(--text);
+      background: var(--bg-raised);
+      transform: translateY(-2px);
+    }
+
+    .social-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      fill: currentColor;
+    }
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 24px;
+      text-align: center;
+    }
+
+    .footer-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .footer-logo {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      letter-spacing: 0.08em;
+    }
+
+    .footer-logo span {
+      color: var(--ocean);
+    }
+
+    .footer-copy {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      line-height: 1.7;
+    }
+
+    .footer-copy a {
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .footer-copy a:hover {
+      color: var(--ocean);
+      border-color: var(--ocean);
+    }
+
+    /* ============================================================
+       DIVIDER
+    ============================================================ */
+    .divider {
+      width: 64px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--ocean), transparent);
+      margin: 0 auto 48px;
+      border-radius: 2px;
+    }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+    @media (max-width: 700px) {
+      .hero-card-inner { padding: 40px 28px; }
+      .nav-links { display: none; }
+      .tier-grid { grid-template-columns: 1fr; }
+      .newsletter-form { flex-direction: column; }
+      .platform-item { min-width: 130px; }
+      .features-grid { grid-template-columns: 1fr; }
+      section { padding: 64px 0; }
+    }
+
+    @media (max-width: 480px) {
+      .hero-card-inner { padding: 32px 20px; }
+      .btn-group { flex-direction: column; align-items: center; }
+      .btn { width: 100%; justify-content: center; }
+    }
+
+    /* ============================================================
+       MISC
+    ============================================================ */
+    .text-accent { color: var(--ocean); }
+    .text-pink { color: var(--neon-pink); }
+    .text-amber { color: var(--amber); }
+    .text-teal { color: var(--teal); }
+
+    .tag {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      padding: 3px 9px;
+      border-radius: 4px;
+      background: rgba(0,160,200,0.1);
+      color: var(--ocean);
+      border: 1px solid rgba(0,160,200,0.2);
+      letter-spacing: 0.05em;
+    }
+
+    .tag.pink {
+      background: rgba(255,45,120,0.08);
+      color: var(--neon-pink);
+      border-color: rgba(255,45,120,0.2);
+    }
+
+    .tag.amber {
+      background: rgba(245,166,35,0.08);
+      color: var(--amber);
+      border-color: rgba(245,166,35,0.2);
+    }
+
+    /* submit feedback */
+    .form-success {
+      display: none;
+      color: var(--teal);
+      font-family: var(--mono);
+      font-size: 0.88rem;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Cursor beaver -->
+<div id="cursor-beaver">🦫</div>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-logo">CAMERA REMOTE <span style="color: var(--neon-pink);">3000</span></div>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#gantt">Progress</a></li>
+    <li><a href="#beaver">Pricing</a></li>
+    <li><a href="#newsletter">Updates</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="hero">
+  <div class="stars" id="stars"></div>
+  <div class="container" style="width: 100%; max-width: 760px;">
+    <div class="hero-card">
+      <div class="hero-card-inner">
+        <div class="hero-icon-area">📷</div>
+        <div class="hero-tagline fade-up">
+          <span>Sony Imaging Edge</span><br>can go to hell.
+        </div>
+        <p class="hero-subtitle fade-up delay-1">
+          We built something better.<br>
+          <strong>Camera Remote 3000</strong> — live preview, gestures, voice,<br>
+          Nanoleaf, AI, and a watchOS companion app.<br>
+          One person. Pure spite. Ships anyway.
+        </p>
+        <div class="btn-group fade-up delay-2">
+          <a href="#" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            Download for macOS
+          </a>
+          <a href="#" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            iOS App
+          </a>
+          <a href="#" class="btn btn-testflight">
+            🧪 TestFlight Beta
+          </a>
+        </div>
+        <p class="hero-footnote fade-up delay-3">
+          macOS 14+ · iOS 17+ · watchOS 10+ · also a Ruby CLI if you're built different
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Platform versions bar -->
+<div class="platform-bar" id="platforms">
+  <div class="container">
+    <div class="platform-item fade-up">
+      <span class="platform-icon">💎</span>
+      <div class="platform-label">CLI / Ruby</div>
+      <div class="platform-name">sonyctl</div>
+      <div class="platform-version">3000.no.beaver.emoji.no.0.alpha.1</div>
+    </div>
+    <div class="platform-item fade-up delay-1">
+      <span class="platform-icon">🖥</span>
+      <div class="platform-label">macOS</div>
+      <div class="platform-name">Camera Remote</div>
+      <div class="platform-version">3000.0.0</div>
+    </div>
+    <div class="platform-item fade-up delay-2">
+      <span class="platform-icon">📱</span>
+      <div class="platform-label">iOS</div>
+      <div class="platform-name">Camera Remote</div>
+      <div class="platform-version">3000.0.0</div>
+    </div>
+    <div class="platform-item fade-up delay-3">
+      <span class="platform-icon">⌚️</span>
+      <div class="platform-label">watchOS</div>
+      <div class="platform-name">Camera Remote</div>
+      <div class="platform-version">3000.0.0</div>
+    </div>
+    <div class="platform-item fade-up delay-4">
+      <span class="platform-icon">🤖</span>
+      <div class="platform-label">Android</div>
+      <div class="platform-name">Camera Remote</div>
+      <div class="platform-version">3000.🦫.0-alpha.0</div>
+    </div>
+  </div>
+</div>
+
+<!-- Features -->
+<section id="features">
+  <div class="container">
+    <span class="section-label fade-up">Features</span>
+    <h2 class="section-title fade-up">Everything Sony refused to build.</h2>
+    <p class="section-desc fade-up delay-1">
+      Imaging Edge crashes on launch. PC Remote hasn't been updated since the Jurassic period.
+      We started from scratch. With spite. It helps.
+    </p>
+    <div class="divider"></div>
+
+    <div class="features-grid">
+
+      <!-- Live preview -->
+      <div class="feature-card fade-up">
+        <span class="feature-icon">📡</span>
+        <h3>Live Camera Preview</h3>
+        <p>
+          Real-time WiFi preview from your ILCE-7C. No lag. No cables hanging off your laptop like
+          a sad octopus. Just your camera, your network, and a full-res feed on any of your screens.
+        </p>
+        <div style="margin-top: 16px;">
+          <span class="tag">gphoto2</span>
+          <span class="tag" style="margin-left: 6px;">WiFi</span>
+          <span class="tag pink" style="margin-left: 6px;">USB</span>
+        </div>
+      </div>
+
+      <!-- Gestures -->
+      <div class="feature-card fade-up delay-1">
+        <span class="feature-icon">🤙</span>
+        <h3>7 Hand Gestures</h3>
+        <p>Stand in front of your camera. Wave. Take the shot. That's it.</p>
+        <table class="gesture-table">
+          <tbody>
+            <tr><td>✋</td><td>Focus &amp; shoot</td><td>palm</td></tr>
+            <tr><td>👍</td><td>Trigger shutter</td><td>thumbs up</td></tr>
+            <tr><td>✌️</td><td>Burst mode</td><td>peace</td></tr>
+            <tr><td>🤙</td><td>Video record</td><td>hang loose</td></tr>
+            <tr><td>☝️</td><td>AF point select</td><td>point up</td></tr>
+            <tr><td>🤞</td><td>Bracketing</td><td>crossed</td></tr>
+            <tr><td>👋</td><td>Cancel / reset</td><td>wave</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Voice -->
+      <div class="feature-card fade-up delay-2">
+        <span class="feature-icon">🎙</span>
+        <h3>Voice Commands</h3>
+        <p>
+          "Shoot." "Focus." "Burst five." "ISO auto." Your camera listens now. Sony's app never did.
+          Built with on-device speech recognition — no cloud, no subscription, no drama.
+        </p>
+        <div style="margin-top: 16px;">
+          <span class="tag">On-device</span>
+          <span class="tag" style="margin-left: 6px;">No cloud</span>
+        </div>
+      </div>
+
+      <!-- Tongue snap -->
+      <div class="feature-card fade-up delay-3">
+        <span class="feature-icon">🫰</span>
+        <h3>Tongue Snap Shutter</h3>
+        <p>
+          Snap your tongue against the roof of your mouth. The camera fires.
+          <span style="color: var(--text);">🫰→📸</span><br><br>
+          Yes, it's real. Yes, it works. No, we don't know why we built this.
+          Actually, yes we do: because we <em style="color: var(--neon-pink);">could</em>.
+        </p>
+        <div style="margin-top: 16px;">
+          <span class="tag pink">Proprietary tech</span>
+        </div>
+      </div>
+
+      <!-- Nanoleaf -->
+      <div class="feature-card fade-up">
+        <span class="feature-icon">🌈</span>
+        <h3>Nanoleaf + AI Mood Lighting</h3>
+        <p>
+          Connect your Nanoleaf panels. Point an AI at them. Say "dramatic sunset portrait vibe."
+          Watch your studio transform. Also supports auto-matching lights to on-screen content,
+          rainbow vomit mode (P11), and a surprisingly functional REST client.
+        </p>
+        <div style="margin-top: 16px;">
+          <span class="tag">REST API</span>
+          <span class="tag amber" style="margin-left: 6px;">AI</span>
+          <span class="tag pink" style="margin-left: 6px;">🌈 vomit</span>
+        </div>
+      </div>
+
+      <!-- Beaver watermark -->
+      <div class="feature-card beaver-card fade-up delay-1">
+        <span class="feature-icon">🦫</span>
+        <h3>🦫 Beaver Watermark</h3>
+        <p style="color: var(--amber);">
+          Every photo in the free tier features a tasteful, artisanal beaver emoji
+          in the corner. Pixel-perfect. Centered. Unavoidable.
+        </p>
+        <p style="margin-top: 10px; font-size: 0.82rem;">
+          Your friends will ask about it. "What's that beaver on your photo?" "Oh that's just my camera app."
+          You'll explain. They'll download it. <span style="color: var(--amber);">The beaver is viral marketing.</span>
+        </p>
+        <div style="margin-top: 16px;">
+          <span class="tag amber">Free tier exclusive</span>
+        </div>
+      </div>
+
+      <!-- Apple Watch -->
+      <div class="feature-card fade-up delay-2">
+        <span class="feature-icon">⌚️</span>
+        <h3>Apple Watch Companion</h3>
+        <p>
+          Live preview on your wrist. Tap the Digital Crown to shoot.
+          Because sometimes your hands are full, your phone is charging,
+          and you still need to nail the shot. Also it looks incredibly cool at parties.
+        </p>
+        <div style="margin-top: 16px;">
+          <span class="tag">watchOS 10+</span>
+          <span class="tag" style="margin-left: 6px;">Haptic</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Gantt chart -->
+<section id="gantt" class="gantt-section">
+  <div class="container">
+    <span class="section-label fade-up">Build Progress</span>
+    <h2 class="section-title fade-up">We are very nearly done.</h2>
+    <p class="section-desc fade-up delay-1">
+      83% complete. Two phases left: Rainbow Vomit Mode (in progress, obviously this was prioritized)
+      and App Store submission. The Gantt chart below is generated by the actual build tooling.
+      We eat our own cooking.
+    </p>
+    <div class="divider"></div>
+
+    <div class="gantt-wrapper fade-up">
+      <svg xmlns="http://www.w3.org/2000/svg" width="1100" height="516" font-family="'SF Mono', 'Menlo', 'Monaco', monospace" font-size="13" viewBox="0 0 1100 516">
+        <rect width="100%" height="100%" fill="#1a1a2e" rx="12"/>
+        <g fill="#e0e0e0">
+          <text x="550" y="50" text-anchor="middle" fill="#00a0c8" font-size="18" font-weight="bold">SONYHATE3000 — Build Progress</text>
+          <rect x="20" y="65" width="1060" height="1" fill="#333"/>
+          <text x="30" y="90" fill="#666" font-size="11">Phase</text>
+          <text x="90" y="90" fill="#666" font-size="11">Task</text>
+          <rect x="20" y="97" width="1060" height="1" fill="#333"/>
+          <text x="30" y="110" fill="#00bcd4" font-size="11">P1</text>
+          <text x="70" y="110" fill="#00a0c8" font-size="11">✓</text>
+          <text x="90" y="110" fill="#999" font-size="11">Ruby CLI v2.0.0</text>
+          <rect x="350" y="98" width="58" height="16" fill="#00a0c8" opacity="0.8" rx="2"/>
+          <text x="30" y="138" fill="#00bcd4" font-size="11">P2</text>
+          <text x="70" y="138" fill="#00a0c8" font-size="11">✓</text>
+          <text x="90" y="138" fill="#999" font-size="11">Snap Detector</text>
+          <rect x="379" y="126" width="58" height="16" fill="#00a0c8" opacity="0.8" rx="2"/>
+          <text x="30" y="166" fill="#00bcd4" font-size="11">P3</text>
+          <text x="70" y="166" fill="#00a0c8" font-size="11">✓</text>
+          <text x="90" y="166" fill="#999" font-size="11">Live Preview App</text>
+          <rect x="379" y="154" width="144" height="16" fill="#00a0c8" opacity="0.8" rx="2"/>
+          <text x="30" y="194" fill="#00bcd4" font-size="11">P4</text>
+          <text x="70" y="194" fill="#00a0c8" font-size="11">✓</text>
+          <text x="90" y="194" fill="#999" font-size="11">Aliases &amp; Tests</text>
+          <rect x="494" y="182" width="58" height="16" fill="#00a0c8" opacity="0.8" rx="2"/>
+          <text x="30" y="222" fill="#00bcd4" font-size="11">P5</text>
+          <text x="70" y="222" fill="#00a0c8" font-size="11">✓</text>
+          <text x="90" y="222" fill="#999" font-size="11">Nanoleaf Discovery</text>
+          <rect x="523" y="210" width="29" height="16" fill="#00a0c8" opacity="0.8" rx="2"/>
+          <text x="30" y="250" fill="#00bcd4" font-size="11">P6</text>
+          <text x="70" y="250" fill="#00a0c8" font-size="11">✓</text>
+          <text x="90" y="250" fill="#999" font-size="11">Nanoleaf API Client</text>
+          <rect x="552" y="238" width="86" height="16" fill="#00a0c8" opacity="0.8" rx="2"/>
+          <text x="30" y="278" fill="#00bcd4" font-size="11">P7</text>
+          <text x="70" y="278" fill="#00a0c8" font-size="11">✓</text>
+          <text x="90" y="278" fill="#999" font-size="11">AI Integration</text>
+          <rect x="609" y="266" width="58" height="16" fill="#00a0c8" opacity="0.8" rx="2"/>
+          <text x="30" y="306" fill="#00bcd4" font-size="11">P8</text>
+          <text x="70" y="306" fill="#00a0c8" font-size="11">✓</text>
+          <text x="90" y="306" fill="#999" font-size="11">Camera Debugging</text>
+          <rect x="638" y="294" width="86" height="16" fill="#00a0c8" opacity="0.8" rx="2"/>
+          <text x="30" y="334" fill="#00bcd4" font-size="11">P9</text>
+          <text x="70" y="334" fill="#00a0c8" font-size="11">✓</text>
+          <text x="90" y="334" fill="#999" font-size="11">Test Suite Final</text>
+          <rect x="696" y="322" width="58" height="16" fill="#00a0c8" opacity="0.8" rx="2"/>
+          <text x="30" y="362" fill="#00bcd4" font-size="11">P10</text>
+          <text x="70" y="362" fill="#00a0c8" font-size="11">✓</text>
+          <text x="90" y="362" fill="#999" font-size="11">Cockpit3000 Gantt</text>
+          <rect x="753" y="350" width="115" height="16" fill="#00a0c8" opacity="0.8" rx="2"/>
+          <text x="30" y="390" fill="#00bcd4" font-size="11">P11</text>
+          <text x="70" y="390" fill="#e43c46" font-size="11">◆</text>
+          <text x="90" y="390" fill="#ccc" font-size="11">Rainbow Vomit Mode</text>
+          <rect x="868" y="378" width="86" height="16" fill="#e43c46" opacity="0.6" rx="2"/>
+          <text x="30" y="418" fill="#00bcd4" font-size="11">P12</text>
+          <text x="70" y="418" fill="#8c8c8c" font-size="11">○</text>
+          <text x="90" y="418" fill="#ccc" font-size="11">Xcode App Store</text>
+          <rect x="926" y="406" width="144" height="16" fill="#8c8c8c" opacity="0.3" rx="2"/>
+          <rect x="20" y="451" width="1060" height="1" fill="#333"/>
+          <text x="30" y="466" fill="#ccc" font-weight="bold" font-size="12">Progress:</text>
+          <rect x="120" y="454" width="300" height="16" fill="#333" rx="4"/>
+          <rect x="120" y="454" width="249" height="16" fill="#00c0d8" opacity="0.8" rx="4"/>
+          <text x="430" y="466" fill="#00c0d8" font-size="12">83% (10/12)</text>
+        </g>
+      </svg>
+      <div class="gantt-caption">
+        <span>Generated by Cockpit3000 — the terminal visualization gem powering SONYHATE3000 internals.</span>
+        <span class="progress-note">83% · 10 of 12 phases shipped · rainbow vomit pending</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- The Beaver -->
+<section id="beaver" class="beaver-section">
+  <div class="container">
+    <div class="beaver-hero fade-up">
+      <span class="beaver-emoji-big">🦫</span>
+      <span class="section-label">Pricing</span>
+      <h2 class="section-title">The Beaver is not a bug.</h2>
+      <p class="section-desc" style="max-width: 480px; margin: 0 auto 48px;">
+        The beaver is a feature of our business model. A lovingly placed, pixel-perfect,
+        semi-transparent rodent on every photo you take — until you upgrade. We're not sorry.
+        (We are a little sorry.)
+      </p>
+    </div>
+
+    <div class="tier-grid fade-up">
+      <div class="tier-card free">
+        <div class="tier-name">Free</div>
+        <div class="tier-price">$0<sub>/mo</sub></div>
+        <div class="tier-period">forever · pinky promise</div>
+        <ul class="tier-features">
+          <li class="highlight"><span>✓</span><span>Live WiFi camera preview</span></li>
+          <li class="highlight"><span>✓</span><span>All 7 hand gestures</span></li>
+          <li class="highlight"><span>✓</span><span>Voice commands</span></li>
+          <li class="highlight"><span>✓</span><span>Tongue snap trigger</span></li>
+          <li class="highlight"><span>✓</span><span>Nanoleaf basic control</span></li>
+          <li class="highlight"><span>✓</span><span>Apple Watch preview</span></li>
+          <li class="beaver-feature"><span>🦫</span><span>Beaver watermark on every export. He lives here now.</span></li>
+        </ul>
+      </div>
+
+      <div class="tier-card pro">
+        <div class="tier-name">Pro</div>
+        <div class="tier-price">$8.99<sub>/once</sub></div>
+        <div class="tier-period">one-time · no subscription · ever</div>
+        <ul class="tier-features">
+          <li class="highlight"><span>✓</span><span>Everything in Free</span></li>
+          <li class="highlight"><span>✓</span><span>AI mood lighting (Nanoleaf)</span></li>
+          <li class="highlight"><span>✓</span><span>RAW export support</span></li>
+          <li class="highlight"><span>✓</span><span>Batch remote shooting</span></li>
+          <li class="highlight"><span>✓</span><span>Rainbow Vomit Mode (when P11 ships)</span></li>
+          <li class="highlight"><span>✓</span><span>Priority support (email me, I'll respond)</span></li>
+          <li class="highlight" style="color: var(--teal);"><span>🚫</span><span>No beaver. The beaver is evicted. You are free.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="beaver-fine-print fade-up">
+      Why one-time? Because subscriptions for camera remote apps are predatory and weird.<br>
+      $8.99 is less than a coffee at an airport. Buy it once. Own it forever. Update forever.<br><br>
+      The 🦫 in <code>3000.🦫.0-alpha.0</code> on Android is not related to the watermark.<br>
+      That's a different beaver. That beaver is architectural.
+    </p>
+  </div>
+</section>
+
+<!-- Newsletter -->
+<section id="newsletter" class="newsletter-section">
+  <div class="container">
+    <div class="newsletter-card fade-up">
+      <span style="font-size: 2rem; display: block; margin-bottom: 20px;">📬</span>
+      <h2>Get notified when we ship.</h2>
+      <p>No spam. No "growth hacking." No synergy. Just an email when the app is ready. Maybe one about the beaver. That's it.</p>
+      <form class="newsletter-form" id="newsletter-form" onsubmit="handleSubmit(event)">
+        <input
+          type="email"
+          class="newsletter-input"
+          placeholder="your@email.com"
+          required
+          autocomplete="email"
+        >
+        <button type="submit" class="btn btn-primary">Notify me</button>
+      </form>
+      <p class="newsletter-note">Only beaver. No spam.</p>
+      <p class="form-success" id="form-success">Got it. You'll hear from us. Probably. 🦫</p>
+    </div>
+  </div>
+</section>
+
+<!-- Social -->
+<section class="social-section">
+  <div class="container">
+    <span class="section-label fade-up">Follow Along</span>
+    <h2 class="fade-up" style="font-size: 1.6rem; margin-bottom: 8px;">We post the chaos.</h2>
+    <p class="fade-up delay-1" style="margin-bottom: 0;">Building in public. Occasional beaver content.</p>
+    <div class="social-links fade-up delay-2">
+
+      <!-- Instagram -->
+      <a href="https://instagram.com/sonyhate3000" class="social-link" target="_blank" rel="noopener">
+        <svg class="social-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+        </svg>
+        @sonyhate3000
+      </a>
+
+      <!-- Bluesky -->
+      <a href="https://bsky.app/profile/sonyhate3000.bsky.social" class="social-link" target="_blank" rel="noopener">
+        <svg class="social-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.204-.659-.299-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8z"/>
+        </svg>
+        Bluesky
+      </a>
+
+      <!-- Twitter / X -->
+      <a href="https://x.com/sonyhate3000" class="social-link" target="_blank" rel="noopener">
+        <svg class="social-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.91-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+        @sonyhate3000
+      </a>
+
+      <!-- TikTok -->
+      <a href="https://tiktok.com/@sonyhate3000" class="social-link" target="_blank" rel="noopener">
+        <svg class="social-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.79 1.53V6.73a4.85 4.85 0 01-1.02-.04z"/>
+        </svg>
+        @sonyhate3000
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">
+      CAMERA REMOTE <span>3000</span>
+      &nbsp;·&nbsp;
+      <span style="color: var(--text-dim);">internally known as</span>
+      &nbsp;<span style="color: var(--neon-pink);">SONYHATE3000</span>
+    </div>
+    <p class="footer-copy">
+      Built with hate (for Sony software), love (for photography), and
+      <a href="https://claude.ai" target="_blank" rel="noopener">Claude</a>.<br>
+      One person. One camera. Infinite patience for cursed version strings.<br><br>
+      <a href="https://github.com/sonyhate3000" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp;
+      <a href="mailto:hi@sonyhate3000.com">hi@sonyhate3000.com</a>
+      &nbsp;·&nbsp;
+      <span style="font-family: var(--mono); font-size: 0.78rem; color: var(--text-dim);">v3000.0.0</span>
+    </p>
+    <p style="font-family: var(--mono); font-size: 0.72rem; color: var(--text-dim); margin-top: 8px;">
+      Not affiliated with Sony. Sony Imaging Edge is a trademark of Sony Corporation.<br>
+      We just really didn't like their app. 🦫
+    </p>
+  </div>
+</footer>
+
+<script>
+  /* ============================================================
+     CURSOR BEAVER
+  ============================================================ */
+  const cursorBeaver = document.getElementById('cursor-beaver');
+  let mouseX = -100, mouseY = -100;
+  let beaverX = -100, beaverY = -100;
+
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  function animateBeaver() {
+    // Slight lag for personality
+    beaverX += (mouseX - beaverX) * 0.12;
+    beaverY += (mouseY - beaverY) * 0.12;
+    cursorBeaver.style.left = beaverX + 'px';
+    cursorBeaver.style.top = beaverY + 'px';
+    requestAnimationFrame(animateBeaver);
+  }
+  animateBeaver();
+
+  /* ============================================================
+     SCROLL FADE-IN
+  ============================================================ */
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    },
+    { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+  );
+
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  /* ============================================================
+     PARALLAX HERO
+  ============================================================ */
+  const hero = document.getElementById('hero');
+  window.addEventListener('scroll', () => {
+    const scrolled = window.scrollY;
+    if (scrolled < window.innerHeight) {
+      hero.style.backgroundPositionY = scrolled * 0.4 + 'px';
+    }
+  }, { passive: true });
+
+  /* ============================================================
+     STAR FIELD
+  ============================================================ */
+  const starsContainer = document.getElementById('stars');
+  const starCount = 80;
+
+  for (let i = 0; i < starCount; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.animationDuration = (2 + Math.random() * 4) + 's';
+    star.style.animationDelay = (Math.random() * 4) + 's';
+    const size = Math.random() * 2 + 1;
+    star.style.width = size + 'px';
+    star.style.height = size + 'px';
+    star.style.opacity = Math.random() * 0.5 + 0.1;
+    starsContainer.appendChild(star);
+  }
+
+  /* ============================================================
+     NEWSLETTER FORM
+  ============================================================ */
+  function handleSubmit(e) {
+    e.preventDefault();
+    const form = document.getElementById('newsletter-form');
+    const success = document.getElementById('form-success');
+    form.style.display = 'none';
+    success.style.display = 'block';
+  }
+</script>
+
+</body>
+</html>
