@@ -239,6 +239,9 @@
       margin-left: 2.5%;
       overflow-x: auto;
       display: block;
+      background: var(--code-bg);
+      padding: 1em 1.5em;
+      border-radius: 4px;
     }
 
     pre.fullwidth > code { width: 90%; }
@@ -247,12 +250,6 @@
       background: var(--code-bg);
       padding: 0.1em 0.3em;
       border-radius: 3px;
-    }
-
-    pre > code {
-      background: var(--code-bg);
-      padding: 1em 1.5em;
-      border-radius: 4px;
     }
 
     .marginnote > code, .sidenote > code { font-size: 1rem; }
@@ -419,6 +416,7 @@
       grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
       gap: 0.5rem;
       margin: 1rem 0;
+      width: 55%;
     }
 
     .gesture-card {
@@ -536,6 +534,7 @@
       }
 
       .platforms { width: 100%; }
+      .gesture-grid { width: 100%; }
 
       div.table-wrapper, table { width: 85%; }
       img { width: 100%; }
@@ -656,7 +655,24 @@
       width: 3em;
     }
 
+    [data-theme="midmod"] .newsletter button {
+      border-radius: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
     /* Midmod color variants — rotate via JS */
+    [data-theme="midmod"][data-midmod-color="red"] {
+      --accent: #cc2936;
+      --accent-alpha: rgba(204, 41, 54, 0.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      [data-theme="midmod"][data-midmod-color="red"] {
+        --accent: #e84855;
+        --accent-alpha: rgba(232, 72, 85, 0.15);
+      }
+    }
+
     [data-theme="midmod"][data-midmod-color="blue"] {
       --accent: #264f78;
       --accent-alpha: rgba(38, 79, 120, 0.12);
@@ -952,8 +968,8 @@
       border-radius: 12px;
     }
 
-    /* Film contact sheet vibe for images */
-    [data-theme="capa"] img {
+    /* Film contact sheet vibe for photos (not SVG data visualizations) */
+    [data-theme="capa"] img:not([src$=".svg"]) {
       filter: contrast(1.1) saturate(0.7);
       border: 3px solid var(--fg);
       padding: 2px;
@@ -1019,8 +1035,16 @@
     }
   </style>
 </head>
-</head>
 <body>
+
+<!-- Theme Switcher — first in DOM for keyboard focus order -->
+<nav class="theme-switcher" aria-label="Design theme">
+  <button data-theme-select="tufte" class="active" title="Edward Tufte — cream, serif, sidenotes, data-ink maximized">Tufte</button>
+  <button data-theme-select="midmod" title="Mid-Century Modern — Bauhaus geometry, Rietveld colors, Eames warmth">Midmod</button>
+  <button data-theme-select="bresson" title="Henri Cartier-Bresson — decisive moment, geometric, black & white, Leica-precise">Bresson</button>
+  <button data-theme-select="capa" title="Robert Capa — D-Day, the convertible, film grain, warm Mediterranean danger">Capa</button>
+</nav>
+
 <article>
 
   <!-- ============================================================
@@ -1310,7 +1334,7 @@
       </span>
     </p>
 
-    <div class="gesture-grid" style="width: 55%;">
+    <div class="gesture-grid">
       <div class="gesture-card"><span class="gesture-emoji">✋</span>Capture<div class="gesture-label">Open Palm</div></div>
       <div class="gesture-card"><span class="gesture-emoji">✊</span>Record<div class="gesture-label">Fist</div></div>
       <div class="gesture-card"><span class="gesture-emoji">✌️</span>Preview<div class="gesture-label">Peace</div></div>
@@ -1871,14 +1895,6 @@
   </section>
 
 </article>
-
-<!-- Theme Switcher -->
-<nav class="theme-switcher" aria-label="Design theme">
-  <button data-theme-select="tufte" class="active" title="Edward Tufte — cream, serif, sidenotes, data-ink maximized">Tufte</button>
-  <button data-theme-select="midmod" title="Mid-Century Modern — Bauhaus geometry, Rietveld colors, Eames warmth">Midmod</button>
-  <button data-theme-select="bresson" title="Henri Cartier-Bresson — decisive moment, geometric, black & white, Leica-precise">Bresson</button>
-  <button data-theme-select="capa" title="Robert Capa — D-Day, the convertible, film grain, warm Mediterranean danger">Capa</button>
-</nav>
 
 <script>
   // Theme switcher — DEAD/WALK/MAN 3000
