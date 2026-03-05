@@ -680,46 +680,71 @@
     .s-o-n-y-h-a-t-e { /* ... --- -. -.-- / .... .- - . / ...-- ----- ----- ----- */ }
 
     /* ===========================================================
-       THEME: MIDMOD — Mid-Century Modern
-       Grayscale + one bold semi-transparent accent.
-       Bauhaus geometry, Rietveld palette, Eames-era warmth.
+       THEME: MIDMOD — Mid-Century Modern (1947–1969)
+
+       Not the Mondrian myth. Not the B&W Shulman fiction.
+       The ACTUAL era: Kodachrome poolsides, Girard textiles,
+       walnut credenzas, Eames fiberglass in burnt orange,
+       Saarinen in white, Jacobsen in ox blood wool.
+
+       Structure is Vignelli (the grid, Helvetica, discipline).
+       Color is Girard (mustard, teal, coral, olive — LIFE).
+       Typography is Rand (Futura, playful geometry, one color
+       used with surgical precision against a grey field).
+
+       The B&W documentation of a polychrome reality is the
+       central tension. We use it: the base is near-monochrome
+       (like looking at Shulman's prints), but the accent that
+       punches through is the Kodachrome truth.
        =========================================================== */
 
     [data-theme="midmod"] {
-      --bg: #f4f1eb;
-      --fg: #1a1a1a;
-      --fg-dim: #4a4a4a;
-      --fg-faint: #8a8a8a;
-      --rule: #c8c4bc;
-      --code-bg: #eae6de;
-      --link-underline: rgba(0,0,0,0.15);
-      --accent: #cc2936;
-      --accent-alpha: rgba(204, 41, 54, 0.12);
-      --table-stripe: rgba(0,0,0,0.03);
-      --status-done: #1a1a1a;
-      --status-wip: #cc2936;
-      --status-designed: #8a8a8a;
-      --status-na: #c8c4bc;
+      /* Base: warm grey — the concrete, the terrazzo, the newspaper */
+      --bg: #f0ebe1;
+      --fg: #2c2c2c;
+      --fg-dim: #5a5650;
+      --fg-faint: #958e84;
+      --rule: #c4bdb2;
+      --code-bg: #e8e2d6;
+      --link-underline: rgba(44, 44, 44, 0.2);
+      /* Default accent: Mustard Gold — Herman Miller catalog, brass hardware */
+      --accent: #c49102;
+      --accent-alpha: rgba(196, 145, 2, 0.10);
+      --accent-secondary: #5a4a2a; /* walnut undertone */
+      --table-stripe: rgba(44, 44, 44, 0.03);
+      --status-done: #2c2c2c;
+      --status-wip: #c49102;
+      --status-designed: #958e84;
+      --status-na: #c4bdb2;
     }
 
     @media (prefers-color-scheme: dark) {
+      /* Dark: walnut-paneled office, brass desk lamp, warm lamplight */
       [data-theme="midmod"] {
-        --bg: #1a1917;
-        --fg: #e8e4dc;
-        --fg-dim: #aaa69e;
-        --fg-faint: #6a665e;
-        --rule: #3a3630;
-        --code-bg: #242220;
-        --link-underline: rgba(255,255,255,0.15);
-        --accent: #e84855;
-        --accent-alpha: rgba(232, 72, 85, 0.15);
-        --table-stripe: rgba(255,255,255,0.03);
-        --status-done: #e8e4dc;
-        --status-wip: #e84855;
-        --status-designed: #6a665e;
-        --status-na: #3a3630;
+        --bg: #1e1c18;
+        --fg: #ddd8cc;
+        --fg-dim: #a8a298;
+        --fg-faint: #6a6458;
+        --rule: #3a362e;
+        --code-bg: #28261f;
+        --link-underline: rgba(221, 216, 204, 0.2);
+        --accent: #e0a820;
+        --accent-alpha: rgba(224, 168, 32, 0.12);
+        --accent-secondary: #8a7a5a;
+        --table-stripe: rgba(221, 216, 204, 0.03);
+        --status-done: #ddd8cc;
+        --status-wip: #e0a820;
+        --status-designed: #6a6458;
+        --status-na: #3a362e;
       }
     }
+
+    /* ---- Midmod Typography ----
+       Futura (Renner, 1927) → the MCM workhorse.
+       Big Shoulders → WPA poster DNA, display only.
+       DIN → German industrial standard, data/tables.
+       Optima would be ideal but system availability is spotty,
+       so Gill Sans as humanist alternative for sidenotes. */
 
     [data-theme="midmod"] body {
       font-family: "Futura", "Century Gothic", "Gill Sans", "Gill Sans MT",
@@ -732,8 +757,9 @@
       font-family: "Big Shoulders Inline", "Big Shoulders", "Futura", "Century Gothic", sans-serif;
       font-weight: 400;
       text-transform: uppercase;
-      letter-spacing: 0.15em;
-      font-size: 3.2rem;
+      letter-spacing: 0.18em;
+      font-size: 3.4rem;
+      line-height: 0.95;
     }
 
     [data-theme="midmod"] h2 {
@@ -742,64 +768,137 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.12em;
-      font-size: 1.6rem;
-      border-bottom: 3px solid var(--accent);
-      padding-bottom: 0.3em;
+      font-size: 1.5rem;
+      /* The Vignelli underline — a ruled baseline, not decorative */
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 0.4em;
       display: inline-block;
     }
 
     [data-theme="midmod"] h3 {
       font-family: "DIN Alternate", "Futura", "Century Gothic", sans-serif;
       font-style: normal;
-      font-weight: 700;
+      font-weight: 600;
       text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 1.1rem;
+      color: var(--accent);
+    }
+
+    [data-theme="midmod"] .subtitle {
+      font-family: "Futura", "Century Gothic", sans-serif;
+      font-weight: 300;
+      font-style: normal;
       letter-spacing: 0.08em;
+      text-transform: uppercase;
       font-size: 1.1rem;
     }
+
+    /* ---- Brand lockup: Rand-esque playful geometry ---- */
 
     [data-theme="midmod"] .brand-lockup {
       font-family: "Big Shoulders Inline", "Big Shoulders", "Futura", "Century Gothic", sans-serif;
       font-weight: 800;
-      letter-spacing: 0.2em;
-      font-size: 2.2rem;
+      letter-spacing: 0.25em;
+      font-size: 2.4rem;
+      line-height: 0.9;
     }
 
-    [data-theme="midmod"] .brand-3000 { color: var(--accent); }
+    [data-theme="midmod"] .brand-3000 {
+      color: var(--accent);
+    }
 
-    /* Midmod: Bungee Spice 3000 picks up accent color via palette */
+    /* Color font for the 3000 — like a Rand rebus */
     @supports (font-palette: normal) {
       [data-theme="midmod"] .brand-3000 {
         font-family: "Bungee Spice", "Big Shoulders Inline", "Futura", sans-serif;
-        font-palette: --dwm3000-cool;
+        font-palette: --dwm3000;
       }
     }
 
+    /* ---- Midmod code: Braun calculator precision ---- */
+
     [data-theme="midmod"] code, [data-theme="midmod"] pre > code {
       font-family: "Recursive", "PT Mono", "SF Mono", Menlo, monospace;
-      /* Linear, strict mono for Bauhaus precision */
       font-variation-settings: "CASL" 0, "MONO" 1, "CRSV" 0;
+    }
+
+    [data-theme="midmod"] pre > code {
+      /* Code blocks get a left accent border — like a Knoll fabric swatch */
+      border-left: 3px solid var(--accent);
+      border-radius: 0;
     }
 
     [data-theme="midmod"] .arch-diagram {
       font-variation-settings: "CASL" 0, "MONO" 1, "CRSV" 0;
+      border-left: 3px solid var(--accent);
+      border-radius: 0;
     }
 
-    /* Midmod: suppress drop cap (too decorative for Bauhaus) */
-    [data-theme="midmod"] p::first-letter {
-      initial-letter: normal;
+    /* ---- Drop cap: Lubalin/Thompson style, geometric ----
+       MCM DID use initial letters — Herb Lubalin at Avant Garde,
+       Bradbury Thompson at Westvaco. But always geometric,
+       always in the accent color, always Futura. */
+
+    [data-theme="midmod"] .epigraph + section p:first-of-type::first-letter,
+    [data-theme="midmod"] section:first-of-type > p:first-of-type::first-letter {
+      font-family: "Futura", "Century Gothic", sans-serif;
+      font-weight: 700;
+      initial-letter: 3;
+      color: var(--accent);
+      margin-right: 0.05em;
     }
+
+    /* ---- Sidenotes: lighter weight, Gill Sans humanist feel ---- */
+
+    [data-theme="midmod"] .sidenote,
+    [data-theme="midmod"] .marginnote {
+      font-family: "Gill Sans", "Gill Sans MT", "Futura", Calibri, sans-serif;
+      font-weight: 400;
+      font-size: 1rem;
+      color: var(--fg-dim);
+    }
+
+    /* ---- Epigraph: Fortune magazine editorial voice ---- */
 
     [data-theme="midmod"] blockquote {
-      border-left: 4px solid var(--accent);
+      border-left: 3px solid var(--accent);
       padding-left: 1.5em;
       background: var(--accent-alpha);
+      border-radius: 0;
     }
+
+    [data-theme="midmod"] .epigraph > blockquote {
+      background: none;
+      border-left: none;
+      padding-left: 0;
+      border-top: 2px solid var(--accent);
+      border-bottom: 1px solid var(--rule);
+      padding: 1.5em 0;
+    }
+
+    /* ---- Newthought: small-caps in accent, like a Brodovitch drop line ---- */
+
+    [data-theme="midmod"] span.newthought {
+      font-family: "Futura", "Century Gothic", sans-serif;
+      font-variant-caps: all-small-caps;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+    }
+
+    /* ---- Components ---- */
 
     [data-theme="midmod"] .acrostic-letter { color: var(--accent); }
 
     [data-theme="midmod"] .gesture-card {
       border: 2px solid var(--fg);
       border-radius: 0;
+      transition: border-color 0.3s ease;
+    }
+
+    [data-theme="midmod"] .gesture-card:hover {
+      border-color: var(--accent);
     }
 
     [data-theme="midmod"] .platform-badge {
@@ -807,11 +906,53 @@
       border-radius: 0;
       text-transform: uppercase;
       letter-spacing: 0.08em;
+      font-family: "DIN Alternate", "Futura", sans-serif;
+      font-weight: 600;
+      transition: border-color 0.3s ease, color 0.3s ease;
     }
 
+    [data-theme="midmod"] .platform-badge:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* HR: Girard-inspired geometric divider — short, bold, accent */
     [data-theme="midmod"] hr {
       border-top: 3px solid var(--accent);
       width: 3em;
+    }
+
+    /* ---- Tables: the IBM annual report ---- */
+
+    [data-theme="midmod"] th {
+      font-family: "DIN Alternate", "DIN Condensed", "Futura", sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      border-bottom-color: var(--accent);
+      border-bottom-width: 2px;
+    }
+
+    [data-theme="midmod"] td {
+      font-variant-numeric: tabular-nums lining-nums;
+    }
+
+    /* ---- Phase timeline: walnut border, brass time markers ---- */
+
+    [data-theme="midmod"] .phase {
+      border-left: 3px solid var(--accent);
+    }
+
+    [data-theme="midmod"] .phase-time {
+      font-family: "DIN Alternate", "DIN Condensed", "Futura", sans-serif;
+      font-variant-numeric: tabular-nums lining-nums;
+      color: var(--accent);
+    }
+
+    /* ---- Newsletter: the Herman Miller mailer ---- */
+
+    [data-theme="midmod"] .newsletter {
+      border-top: 2px solid var(--accent);
+      border-bottom: 1px solid var(--rule);
     }
 
     [data-theme="midmod"] .newsletter button {
@@ -819,50 +960,119 @@
       text-transform: uppercase;
       letter-spacing: 0.08em;
       font-family: "DIN Alternate", "Futura", sans-serif;
+      font-weight: 600;
+      background: var(--accent);
+      border-color: var(--accent);
+      transition: opacity 0.2s ease;
     }
 
-    [data-theme="midmod"] th {
-      font-family: "DIN Alternate", "DIN Condensed", "Futura", sans-serif;
-      font-weight: 700;
-      letter-spacing: 0.12em;
+    [data-theme="midmod"] .newsletter button:hover {
+      opacity: 0.85;
+      background: var(--accent);
+      border-color: var(--accent);
     }
 
-    [data-theme="midmod"] .phase-time {
-      font-family: "DIN Alternate", "DIN Condensed", "Futura", sans-serif;
-      font-variant-numeric: tabular-nums lining-nums;
+    [data-theme="midmod"] .newsletter input[type="email"] {
+      border-radius: 0;
+      border: 2px solid var(--rule);
     }
 
-    /* Midmod color variants — rotate via JS */
-    [data-theme="midmod"][data-midmod-color="red"] {
-      --accent: #cc2936;
-      --accent-alpha: rgba(204, 41, 54, 0.12);
-    }
-    @media (prefers-color-scheme: dark) {
-      [data-theme="midmod"][data-midmod-color="red"] {
-        --accent: #e84855;
-        --accent-alpha: rgba(232, 72, 85, 0.15);
-      }
+    [data-theme="midmod"] .newsletter input[type="email"]:focus {
+      border-color: var(--accent);
+      outline: none;
     }
 
-    [data-theme="midmod"][data-midmod-color="blue"] {
-      --accent: #264f78;
-      --accent-alpha: rgba(38, 79, 120, 0.12);
-    }
-    @media (prefers-color-scheme: dark) {
-      [data-theme="midmod"][data-midmod-color="blue"] {
-        --accent: #5b9bd5;
-        --accent-alpha: rgba(91, 155, 213, 0.15);
-      }
+    /* ---- Links: accent underline, the single bright thread ---- */
+
+    [data-theme="midmod"] a:link, [data-theme="midmod"] a:visited {
+      text-decoration-color: var(--accent);
+      text-decoration-thickness: 1.5px;
+      text-underline-offset: 0.2em;
     }
 
-    [data-theme="midmod"][data-midmod-color="yellow"] {
+    [data-theme="midmod"] a:hover {
+      color: var(--accent);
+      text-decoration-color: var(--accent);
+    }
+
+    /* ===========================================================
+       MIDMOD COLOR SYSTEM — The Authentic MCM Palette
+
+       Not Mondrian's primary triad (that's De Stijl, 1917).
+       These are the colors people actually LIVED with:
+
+       Mustard Gold  — Herman Miller catalog, Girard textiles, brass
+       Burnt Orange  — Eames fiberglass, Jacobsen wool, teak warmth
+       Teal          — Palm Springs poolside, Arne Vodder, Mediterranean tile
+       Olive         — the carpet, the kitchen, the Eames Lounge's leather
+       Coral         — the cocktail dress, the Knoll textile, the sunset
+
+       Base stays near-monochrome (Shulman's B&W prints).
+       The accent is the Kodachrome truth punching through.
+       =========================================================== */
+
+    /* Mustard Gold — the brass, the catalog, the California sun */
+    [data-theme="midmod"][data-midmod-color="mustard"] {
       --accent: #c49102;
-      --accent-alpha: rgba(196, 145, 2, 0.12);
+      --accent-alpha: rgba(196, 145, 2, 0.10);
+      --accent-secondary: #5a4a2a;
     }
     @media (prefers-color-scheme: dark) {
-      [data-theme="midmod"][data-midmod-color="yellow"] {
-        --accent: #f0c040;
-        --accent-alpha: rgba(240, 192, 64, 0.15);
+      [data-theme="midmod"][data-midmod-color="mustard"] {
+        --accent: #e0a820;
+        --accent-alpha: rgba(224, 168, 32, 0.12);
+      }
+    }
+
+    /* Burnt Orange — Eames shell #DSW, autumn, warmth */
+    [data-theme="midmod"][data-midmod-color="orange"] {
+      --accent: #bf5700;
+      --accent-alpha: rgba(191, 87, 0, 0.10);
+      --accent-secondary: #5a3a1a;
+    }
+    @media (prefers-color-scheme: dark) {
+      [data-theme="midmod"][data-midmod-color="orange"] {
+        --accent: #e07830;
+        --accent-alpha: rgba(224, 120, 48, 0.12);
+      }
+    }
+
+    /* Teal — the pool, the tile, the Scandinavian cabinet */
+    [data-theme="midmod"][data-midmod-color="teal"] {
+      --accent: #00797f;
+      --accent-alpha: rgba(0, 121, 127, 0.10);
+      --accent-secondary: #1a4a4a;
+    }
+    @media (prefers-color-scheme: dark) {
+      [data-theme="midmod"][data-midmod-color="teal"] {
+        --accent: #20b0b8;
+        --accent-alpha: rgba(32, 176, 184, 0.12);
+      }
+    }
+
+    /* Olive — the carpet, the station wagon, the Eames Lounge leather */
+    [data-theme="midmod"][data-midmod-color="olive"] {
+      --accent: #5a7a2a;
+      --accent-alpha: rgba(90, 122, 42, 0.10);
+      --accent-secondary: #3a4a1a;
+    }
+    @media (prefers-color-scheme: dark) {
+      [data-theme="midmod"][data-midmod-color="olive"] {
+        --accent: #8aaa4a;
+        --accent-alpha: rgba(138, 170, 74, 0.12);
+      }
+    }
+
+    /* Coral — the cocktail dress, the Knoll fabric, the Slim Aarons sky */
+    [data-theme="midmod"][data-midmod-color="coral"] {
+      --accent: #c45a50;
+      --accent-alpha: rgba(196, 90, 80, 0.10);
+      --accent-secondary: #6a3030;
+    }
+    @media (prefers-color-scheme: dark) {
+      [data-theme="midmod"][data-midmod-color="coral"] {
+        --accent: #e08078;
+        --accent-alpha: rgba(224, 128, 120, 0.12);
       }
     }
 
@@ -2161,7 +2371,10 @@
   (function() {
     const root = document.documentElement;
     const buttons = document.querySelectorAll('[data-theme-select]');
-    const midmodColors = ['red', 'blue', 'yellow'];
+    // The authentic MCM palette — not Mondrian's primaries
+    // Mustard → Orange → Teal → Olive → Coral
+    // Like turning the pages of a 1962 Fortune magazine
+    const midmodColors = ['mustard', 'orange', 'teal', 'olive', 'coral'];
     let midmodIdx = 0;
     let midmodInterval = null;
 
@@ -2175,13 +2388,14 @@
         root.setAttribute('data-theme', name);
       }
 
-      // Midmod cycles its accent color every 8 seconds
+      // Midmod cycles through the real MCM palette every 12 seconds
+      // Slower than before — like the changing light through a Neutra glass wall
       if (name === 'midmod') {
         root.setAttribute('data-midmod-color', midmodColors[midmodIdx]);
         midmodInterval = setInterval(function() {
           midmodIdx = (midmodIdx + 1) % midmodColors.length;
           root.setAttribute('data-midmod-color', midmodColors[midmodIdx]);
-        }, 8000);
+        }, 12000);
       }
 
       // Update active button
