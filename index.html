@@ -15,6 +15,12 @@
   <meta name="twitter:description" content="A complete replacement for Sony Imaging Edge. Gestures. Voice. Lights. Multi-camera. Free.">
   <script defer src="/js/beaver.js" data-website-id="REPLACE_WITH_UMAMI_WEBSITE_ID" data-host-url="https://cloud.umami.is"></script>
   <!-- ... --- -. -.-- / .... .- - . / ...-- ----- ----- ----- -->
+
+  <!-- Google Fonts: Recursive (variable mono/sans hybrid — CASL, MONO, wght, slnt, CRSV axes) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
+
   <style>
     /* ===========================================================
        TUFTE CSS — adapted for DEAD/WALK/MAN 3000
@@ -23,6 +29,22 @@
        =========================================================== */
 
     @charset "UTF-8";
+
+    /* ---- Color font palette for Bungee Spice ---- */
+    @font-palette-values --dwm3000 {
+      font-family: "Bungee Spice";
+      base-palette: 0;
+    }
+    @font-palette-values --dwm3000-cool {
+      font-family: "Bungee Spice";
+      base-palette: 0;
+      override-colors: 0 #264f78, 1 #5b9bd5;
+    }
+    @font-palette-values --dwm3000-warm {
+      font-family: "Bungee Spice";
+      base-palette: 0;
+      override-colors: 0 #8b4513, 1 #d4a06a;
+    }
 
     :root {
       --bg: #fffff8;
@@ -60,22 +82,33 @@
 
     *, *::before, *::after { box-sizing: border-box; }
 
-    html { font-size: 15px; scroll-behavior: smooth; }
+    html {
+      font-size: 15px;
+      scroll-behavior: smooth;
+      font-optical-sizing: auto;
+      hanging-punctuation: first last;
+    }
 
     body {
       width: 87.5%;
       margin-left: auto;
       margin-right: auto;
       padding-left: 12.5%;
-      font-family: Palatino, "Palatino Linotype", "Palatino LT STD",
+      font-family: "ETBook", Palatino, "Palatino Linotype", "Palatino LT STD",
                    "Book Antiqua", Georgia, serif;
       background-color: var(--bg);
       color: var(--fg);
       max-width: 1400px;
       counter-reset: sidenote-counter;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
     }
 
     /* ---- Typography ---- */
+
+    h1, h2, h3, h4 {
+      text-wrap: balance;
+    }
 
     h1 {
       font-weight: 400;
@@ -121,6 +154,21 @@
       margin-bottom: 1.4rem;
       padding-right: 0;
       vertical-align: baseline;
+      text-wrap: pretty;
+    }
+
+    /* ---- Drop cap on opening paragraph ---- */
+    .epigraph + section p:first-of-type::first-letter,
+    section:first-of-type > p:first-of-type::first-letter {
+      initial-letter: 3;
+      font-weight: 700;
+      margin-right: 0.1em;
+      color: var(--accent, var(--fg));
+    }
+
+    /* ---- Old-style figures in body text ---- */
+    .body-figures {
+      font-variant-numeric: oldstyle-nums proportional-nums;
     }
 
     hr {
@@ -228,9 +276,12 @@
     /* ---- Code ---- */
 
     code, pre > code {
-      font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+      font-family: "Recursive", "SF Mono", Consolas, "Liberation Mono", Menlo, Courier, monospace;
       font-size: 1.0rem;
       line-height: 1.42;
+      /* Recursive variable axes: casual=0 (linear), mono=1 */
+      font-variation-settings: "CASL" 0, "MONO" 1, "CRSV" 0;
+      font-feature-settings: "liga" 1, "calt" 1, "ss01" 1;
     }
 
     pre > code {
@@ -242,6 +293,8 @@
       background: var(--code-bg);
       padding: 1em 1.5em;
       border-radius: 4px;
+      /* Slightly casual for code blocks — warmer reading */
+      font-variation-settings: "CASL" 0.3, "MONO" 1, "CRSV" 0.5;
     }
 
     pre.fullwidth > code { width: 90%; }
@@ -267,6 +320,7 @@
       border-collapse: collapse;
       font-size: 1.1rem;
       line-height: 1.5;
+      font-variant-numeric: tabular-nums lining-nums;
     }
 
     th {
@@ -274,11 +328,41 @@
       border-bottom: 2px solid var(--fg);
       padding: 0.4em 1em 0.4em 0;
       text-align: left;
+      font-variant-caps: all-small-caps;
+      letter-spacing: 0.05em;
     }
 
     td {
       padding: 0.4em 1em 0.4em 0;
       border-bottom: 1px solid var(--rule);
+    }
+
+    /* ---- Multi-column for dense lists ---- */
+    .columns-2 {
+      columns: 2;
+      column-gap: 2em;
+      column-rule: 1px solid var(--rule);
+    }
+
+    .columns-3 {
+      columns: 3;
+      column-gap: 2em;
+      column-rule: 1px solid var(--rule);
+    }
+
+    /* ---- Text wrapping around margin figures ---- */
+    .margin-figure-left {
+      float: left;
+      shape-outside: margin-box;
+      margin: 0 1.5em 1em 0;
+      max-width: 40%;
+    }
+
+    .margin-figure-right {
+      float: right;
+      shape-outside: margin-box;
+      margin: 0 0 1em 1.5em;
+      max-width: 40%;
     }
 
     tr:nth-child(even) { background: var(--table-stripe); }
@@ -293,8 +377,10 @@
     /* ---- Special elements ---- */
 
     span.newthought {
-      font-variant: small-caps;
+      font-variant-caps: small-caps;
+      font-variant-numeric: oldstyle-nums;
       font-size: 1.2em;
+      letter-spacing: 0.02em;
     }
 
     .subtitle {
@@ -336,10 +422,21 @@
       color: var(--accent);
     }
 
+    /* Color font version of 3000 — Bungee Spice COLRv1 chromatic layers */
+    @supports (font-palette: normal) {
+      .brand-lockup .brand-3000 {
+        font-family: "Bungee Spice", "Helvetica Neue", Helvetica, sans-serif;
+        font-palette: --dwm3000;
+        font-size: 2.2rem;
+        letter-spacing: 0.05em;
+        -webkit-text-stroke: 0; /* let the color layers do the work */
+      }
+    }
+
     /* ---- Architecture diagram ---- */
 
     .arch-diagram {
-      font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+      font-family: "Recursive", Consolas, "Liberation Mono", Menlo, Courier, monospace;
       font-size: 0.85rem;
       line-height: 1.4;
       white-space: pre;
@@ -347,6 +444,8 @@
       padding: 1.5em;
       background: var(--code-bg);
       border-radius: 4px;
+      /* Full casual mono — hand-drawn diagram feel */
+      font-variation-settings: "CASL" 1, "MONO" 1, "CRSV" 1;
     }
 
     /* ---- Phase timeline ---- */
@@ -358,9 +457,11 @@
     }
 
     .phase-time {
-      font-variant: small-caps;
+      font-variant-caps: small-caps;
+      font-variant-numeric: oldstyle-nums;
       font-size: 1.1rem;
       color: var(--fg-dim);
+      letter-spacing: 0.03em;
     }
 
     .phase-title {
@@ -538,6 +639,40 @@
 
       div.table-wrapper, table { width: 85%; }
       img { width: 100%; }
+
+      /* Collapse columns on mobile */
+      .columns-2, .columns-3 { columns: 1; column-rule: none; }
+
+      /* Smaller drop cap on mobile */
+      .epigraph + section p:first-of-type::first-letter,
+      section:first-of-type > p:first-of-type::first-letter {
+        initial-letter: 2;
+      }
+
+      /* Tighten AmstelvarA2 on narrow screens */
+      h1 { font-variation-settings: "wght" 400, "wdth" 85, "opsz" 36; }
+
+      /* Float shapes collapse on mobile */
+      .margin-figure-left, .margin-figure-right {
+        float: none;
+        max-width: 100%;
+        margin: 1em 0;
+      }
+    }
+
+    /* ---- Variable font showcase: AmstelvarA2 for Tufte headings ---- */
+    /* AmstelvarA2 is a parametric variable font with axes:
+       wght (weight), wdth (width), opsz (optical size),
+       XTRA (x-transparent), YOPQ (y-opaque), YTLC (y-transparent lowercase) */
+
+    h1 {
+      font-family: "AmstelvarA2 Roman", "ETBook", Palatino, Georgia, serif;
+      font-variation-settings: "wght" 350, "wdth" 100, "opsz" 48, "XTRA" 468, "YOPQ" 79;
+    }
+
+    h2 {
+      font-family: "AmstelvarA2 Italic", "AmstelvarA2 Roman", "ETBook", Palatino, Georgia, serif;
+      font-variation-settings: "wght" 340, "wdth" 100, "opsz" 28;
     }
 
     /* ---- Hidden easter eggs ---- */
@@ -590,18 +725,21 @@
       font-family: "Futura", "Century Gothic", "Gill Sans", "Gill Sans MT",
                    Calibri, "Trebuchet MS", sans-serif;
       letter-spacing: 0.01em;
+      font-variant-numeric: lining-nums tabular-nums;
     }
 
     [data-theme="midmod"] h1 {
-      font-weight: 300;
+      font-family: "Big Shoulders Inline", "Big Shoulders", "Futura", "Century Gothic", sans-serif;
+      font-weight: 400;
       text-transform: uppercase;
       letter-spacing: 0.15em;
-      font-size: 2.8rem;
+      font-size: 3.2rem;
     }
 
     [data-theme="midmod"] h2 {
+      font-family: "DIN Alternate", "DIN Condensed", "Futura", "Century Gothic", sans-serif;
       font-style: normal;
-      font-weight: 300;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.12em;
       font-size: 1.6rem;
@@ -611,23 +749,44 @@
     }
 
     [data-theme="midmod"] h3 {
+      font-family: "DIN Alternate", "Futura", "Century Gothic", sans-serif;
       font-style: normal;
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       font-size: 1.1rem;
     }
 
     [data-theme="midmod"] .brand-lockup {
-      font-family: "Futura", "Century Gothic", sans-serif;
+      font-family: "Big Shoulders Inline", "Big Shoulders", "Futura", "Century Gothic", sans-serif;
       font-weight: 800;
       letter-spacing: 0.2em;
+      font-size: 2.2rem;
     }
 
     [data-theme="midmod"] .brand-3000 { color: var(--accent); }
 
+    /* Midmod: Bungee Spice 3000 picks up accent color via palette */
+    @supports (font-palette: normal) {
+      [data-theme="midmod"] .brand-3000 {
+        font-family: "Bungee Spice", "Big Shoulders Inline", "Futura", sans-serif;
+        font-palette: --dwm3000-cool;
+      }
+    }
+
     [data-theme="midmod"] code, [data-theme="midmod"] pre > code {
-      font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+      font-family: "Recursive", "PT Mono", "SF Mono", Menlo, monospace;
+      /* Linear, strict mono for Bauhaus precision */
+      font-variation-settings: "CASL" 0, "MONO" 1, "CRSV" 0;
+    }
+
+    [data-theme="midmod"] .arch-diagram {
+      font-variation-settings: "CASL" 0, "MONO" 1, "CRSV" 0;
+    }
+
+    /* Midmod: suppress drop cap (too decorative for Bauhaus) */
+    [data-theme="midmod"] p::first-letter {
+      initial-letter: normal;
     }
 
     [data-theme="midmod"] blockquote {
@@ -659,6 +818,18 @@
       border-radius: 0;
       text-transform: uppercase;
       letter-spacing: 0.08em;
+      font-family: "DIN Alternate", "Futura", sans-serif;
+    }
+
+    [data-theme="midmod"] th {
+      font-family: "DIN Alternate", "DIN Condensed", "Futura", sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+    }
+
+    [data-theme="midmod"] .phase-time {
+      font-family: "DIN Alternate", "DIN Condensed", "Futura", sans-serif;
+      font-variant-numeric: tabular-nums lining-nums;
     }
 
     /* Midmod color variants — rotate via JS */
@@ -740,59 +911,97 @@
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       font-weight: 300;
       letter-spacing: 0;
+      font-feature-settings: "kern" 1, "liga" 1;
+      hyphens: auto;
+      -webkit-hyphens: auto;
     }
 
     [data-theme="bresson"] h1 {
-      font-weight: 100;
-      font-size: 4rem;
+      font-family: "Didot", "Bodoni 72", "Bodoni MT", "GFS Didot", "Playfair Display", serif;
+      font-weight: 400;
+      font-style: italic;
+      font-size: 4.5rem;
       letter-spacing: -0.03em;
       border-bottom: 1px solid var(--rule);
       padding-bottom: 0.5rem;
     }
 
     [data-theme="bresson"] h2 {
+      font-family: "Didot", "Bodoni 72", "GFS Didot", serif;
       font-style: normal;
-      font-weight: 100;
+      font-weight: 400;
       font-size: 2rem;
       letter-spacing: -0.02em;
       text-transform: none;
     }
 
     [data-theme="bresson"] h3 {
+      font-family: "Helvetica Neue", Helvetica, sans-serif;
       font-style: normal;
-      font-weight: 400;
+      font-weight: 300;
       font-size: 1.3rem;
-      letter-spacing: 0;
+      letter-spacing: 0.15em;
       text-transform: uppercase;
     }
 
     [data-theme="bresson"] .brand-lockup {
-      font-family: "Helvetica Neue", Helvetica, sans-serif;
-      font-weight: 100;
-      letter-spacing: 0.4em;
-      font-size: 1.4rem;
+      font-family: "Didot", "Bodoni 72", serif;
+      font-weight: 400;
+      font-style: italic;
+      letter-spacing: 0.3em;
+      font-size: 1.6rem;
       line-height: 1.6;
     }
 
     [data-theme="bresson"] .brand-3000 { color: var(--fg); }
 
+    /* Bresson: no color font — pure black & white, typographic discipline */
+    @supports (font-palette: normal) {
+      [data-theme="bresson"] .brand-3000 {
+        font-family: "Didot", "Bodoni 72", serif;
+        font-palette: normal;
+      }
+    }
+
     [data-theme="bresson"] .subtitle {
+      font-family: "Helvetica Neue", Helvetica, sans-serif;
       font-style: normal;
       font-weight: 100;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 1.2rem;
     }
 
     [data-theme="bresson"] code, [data-theme="bresson"] pre > code {
-      font-family: "SF Mono", "Fira Code", Menlo, monospace;
+      font-family: "Recursive", "SF Mono", Menlo, monospace;
       font-weight: 300;
+      /* Ultra-precise: zero casual, strict mono */
+      font-variation-settings: "CASL" 0, "MONO" 1, "CRSV" 0, "wght" 300;
+    }
+
+    [data-theme="bresson"] .arch-diagram {
+      font-variation-settings: "CASL" 0, "MONO" 1, "CRSV" 0, "wght" 300;
     }
 
     [data-theme="bresson"] .epigraph > blockquote,
     [data-theme="bresson"] .epigraph > blockquote > p {
-      font-style: normal;
-      font-weight: 200;
-      font-size: 1.6rem;
+      font-family: "Didot", "Bodoni 72", serif;
+      font-style: italic;
+      font-weight: 400;
+      font-size: 1.8rem;
       letter-spacing: -0.01em;
+    }
+
+    /* Bresson: suppress drop cap (purity, no ornament) */
+    [data-theme="bresson"] p::first-letter {
+      initial-letter: normal;
+    }
+
+    [data-theme="bresson"] span.newthought {
+      font-family: "Helvetica Neue", Helvetica, sans-serif;
+      font-variant-caps: all-small-caps;
+      font-weight: 400;
+      letter-spacing: 0.1em;
     }
 
     [data-theme="bresson"] blockquote {
@@ -818,10 +1027,16 @@
     }
 
     [data-theme="bresson"] th {
+      font-family: "Helvetica Neue", Helvetica, sans-serif;
       font-weight: 300;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      font-size: 0.9rem;
+      letter-spacing: 0.15em;
+      font-size: 0.85rem;
+      font-variant-caps: normal; /* override base all-small-caps */
+    }
+
+    [data-theme="bresson"] td {
+      font-variant-numeric: tabular-nums lining-nums;
     }
 
     [data-theme="bresson"] .acrostic-letter {
@@ -880,34 +1095,40 @@
     [data-theme="capa"] body {
       font-family: "Charter", "Bitstream Charter", "Sitka Text",
                    Cambria, serif;
+      font-variant-numeric: oldstyle-nums proportional-nums;
       /* Film grain overlay */
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
       background-color: var(--bg);
     }
 
     [data-theme="capa"] h1 {
-      font-weight: 700;
-      font-size: 3rem;
+      font-family: "Canela Text", "Cormorant Garamond", "EB Garamond", Georgia, serif;
+      font-weight: 300;
+      font-size: 3.5rem;
       font-style: italic;
       letter-spacing: -0.02em;
     }
 
     [data-theme="capa"] h2 {
+      font-family: "Canela Text", "Cormorant Garamond", "EB Garamond", Georgia, serif;
       font-style: italic;
-      font-weight: 700;
-      font-size: 1.8rem;
+      font-weight: 300;
+      font-size: 2rem;
     }
 
     [data-theme="capa"] h3 {
+      font-family: "Publico Text", "Charter", Georgia, serif;
       font-style: italic;
-      font-weight: 600;
+      font-weight: 700;
       font-size: 1.4rem;
     }
 
     [data-theme="capa"] .subtitle {
-      font-weight: 400;
-      font-size: 1.5rem;
+      font-family: "Canela Text", "Cormorant Garamond", Georgia, serif;
+      font-weight: 300;
+      font-size: 1.6rem;
       letter-spacing: 0.02em;
+      font-style: italic;
     }
 
     [data-theme="capa"] .brand-lockup {
@@ -920,14 +1141,45 @@
 
     [data-theme="capa"] .brand-3000 { color: var(--accent); }
 
+    /* Capa: warm color font palette */
+    @supports (font-palette: normal) {
+      [data-theme="capa"] .brand-3000 {
+        font-family: "Bungee Spice", "Impact", sans-serif;
+        font-palette: --dwm3000-warm;
+      }
+    }
+
     [data-theme="capa"] code, [data-theme="capa"] pre > code {
-      font-family: "Courier New", Courier, monospace;
+      font-family: "Recursive", "Courier New", Courier, monospace;
+      /* Slightly casual, warm — like a field dispatch typed on a portable */
+      font-variation-settings: "CASL" 0.5, "MONO" 1, "CRSV" 0.5;
+    }
+
+    [data-theme="capa"] .arch-diagram {
+      font-variation-settings: "CASL" 0.5, "MONO" 1, "CRSV" 0.5;
     }
 
     [data-theme="capa"] .epigraph > blockquote,
     [data-theme="capa"] .epigraph > blockquote > p {
+      font-family: "EB Garamond", "Cormorant Garamond", "Libertinus Serif", Georgia, serif;
       font-style: italic;
-      font-size: 1.5rem;
+      font-size: 1.6rem;
+      font-variant-numeric: oldstyle-nums;
+    }
+
+    /* Capa: big warm drop cap in accent color */
+    [data-theme="capa"] .epigraph + section p:first-of-type::first-letter,
+    [data-theme="capa"] section:first-of-type > p:first-of-type::first-letter {
+      font-family: "Canela Text", "Cormorant Garamond", Georgia, serif;
+      initial-letter: 4;
+      color: var(--accent);
+      font-weight: 300;
+    }
+
+    [data-theme="capa"] span.newthought {
+      font-family: "Publico Text", "Charter", Georgia, serif;
+      font-variant-caps: small-caps;
+      letter-spacing: 0.04em;
     }
 
     [data-theme="capa"] blockquote {
@@ -942,9 +1194,15 @@
     }
 
     [data-theme="capa"] .platform-badge {
+      font-family: "Publico Text", "Charter", Georgia, serif;
       border: 1px solid var(--accent);
       border-radius: 12px;
       font-style: italic;
+    }
+
+    [data-theme="capa"] .platform-badge .version {
+      font-family: "Recursive", "Courier New", monospace;
+      font-variation-settings: "CASL" 0.3, "MONO" 1;
     }
 
     [data-theme="capa"] hr {
@@ -1000,8 +1258,9 @@
       border-radius: 2rem;
       padding: 0.2rem;
       box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-      font-family: "Gill Sans", "Gill Sans MT", Calibri, sans-serif;
+      font-family: "Proxima Nova", "Gill Sans", "Gill Sans MT", Calibri, sans-serif;
       font-size: 0.75rem;
+      font-weight: 600;
       letter-spacing: 0.06em;
       text-transform: uppercase;
     }
