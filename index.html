@@ -4,1731 +4,1935 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Camera Remote 3000 — Sony Imaging Edge can go to hell.</title>
-  <meta name="description" content="Camera Remote 3000. Built by one person, with hate for Sony software and love for photography. Live preview, gestures, voice control, Nanoleaf. Free tier includes a beaver.">
-  <meta property="og:title" content="Camera Remote 3000">
+  <title>sonyctl — A Complete Replacement for Sony Imaging Edge</title>
+  <meta name="description" content="DEAD/WALK/MAN 3000. Built by one person, with hate for Sony software and love for photography. Camera control, live preview, gestures, voice, lights, multi-camera. Free.">
+  <meta property="og:title" content="DEAD/WALK/MAN 3000 — sonyctl">
   <meta property="og:description" content="Sony Imaging Edge can go to hell. We built something better.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://deadwalkman.amort.berlin/og-image.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Camera Remote 3000">
-  <meta name="twitter:description" content="Sony Imaging Edge can go to hell. We built something better.">
+  <meta name="twitter:title" content="DEAD/WALK/MAN 3000">
+  <meta name="twitter:description" content="A complete replacement for Sony Imaging Edge. Gestures. Voice. Lights. Multi-camera. Free.">
   <script defer src="/js/beaver.js" data-website-id="REPLACE_WITH_UMAMI_WEBSITE_ID" data-host-url="https://cloud.umami.is"></script>
+  <!-- ... --- -. -.-- / .... .- - . / ...-- ----- ----- ----- -->
   <style>
-    /* ============================================================
-       RESET & BASE
-    ============================================================ */
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    /* ===========================================================
+       TUFTE CSS — adapted for DEAD/WALK/MAN 3000
+       Based on https://edwardtufte.github.io/tufte-css/
+       "The purpose of an information display is to assist thinking."
+       =========================================================== */
+
+    @charset "UTF-8";
 
     :root {
-      --bg:           #0a0a0f;
-      --bg-card:      #12121a;
-      --bg-raised:    #1a1a28;
-      --ocean:        #00a0c8;
-      --ocean-bright: #00c8f0;
-      --amber:        #f5a623;
-      --neon-pink:    #ff2d78;
-      --teal:         #00d4aa;
-      --text:         #e8e8f0;
-      --text-muted:   #7a7a9a;
-      --text-dim:     #4a4a6a;
-      --border:       rgba(255,255,255,0.07);
-      --mono:         'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
-      --sans:         -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', sans-serif;
-      --radius:       14px;
-      --radius-sm:    8px;
+      --bg: #fffff8;
+      --fg: #111;
+      --fg-dim: #555;
+      --fg-faint: #999;
+      --rule: #ccc;
+      --code-bg: #f7f5ef;
+      --link-underline: rgba(0,0,0,0.2);
+      --accent: #a00;
+      --table-stripe: rgba(0,0,0,0.025);
+      --status-done: #2a7a3a;
+      --status-wip: #b8860b;
+      --status-designed: #6a5acd;
+      --status-na: #999;
     }
 
-    html {
-      scroll-behavior: smooth;
-      font-size: 16px;
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #151515;
+        --fg: #d8d8d0;
+        --fg-dim: #aaa;
+        --fg-faint: #666;
+        --rule: #333;
+        --code-bg: #1d1d1d;
+        --link-underline: rgba(255,255,255,0.2);
+        --accent: #e55;
+        --table-stripe: rgba(255,255,255,0.03);
+        --status-done: #5cb85c;
+        --status-wip: #f0ad4e;
+        --status-designed: #9b8cd8;
+        --status-na: #666;
+      }
     }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html { font-size: 15px; scroll-behavior: smooth; }
 
     body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--sans);
-      line-height: 1.6;
-      overflow-x: hidden;
-    }
-
-    /* ============================================================
-       CURSOR BEAVER
-    ============================================================ */
-    #cursor-beaver {
-      position: fixed;
-      pointer-events: none;
-      z-index: 9999;
-      font-size: 18px;
-      opacity: 0.25;
-      transform: translate(-50%, -50%);
-      transition: opacity 0.3s;
-      will-change: transform;
-    }
-
-    /* ============================================================
-       TYPOGRAPHY
-    ============================================================ */
-    h1, h2, h3, h4 {
-      font-family: var(--sans);
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      line-height: 1.15;
-    }
-
-    h1 { font-size: clamp(2.4rem, 6vw, 4.2rem); }
-    h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
-    h3 { font-size: 1.25rem; }
-
-    p { color: var(--text-muted); line-height: 1.75; }
-
-    code, .mono {
-      font-family: var(--mono);
-      font-size: 0.85em;
-    }
-
-    a { color: var(--ocean); text-decoration: none; }
-    a:hover { color: var(--ocean-bright); }
-
-    /* ============================================================
-       LAYOUT
-    ============================================================ */
-    .container {
-      max-width: 1040px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-
-    section {
-      padding: 96px 0;
-    }
-
-    /* ============================================================
-       SCROLL ANIMATIONS
-    ============================================================ */
-    .fade-up {
-      opacity: 0;
-      transform: translateY(32px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
-    }
-
-    .fade-up.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .fade-up.delay-1 { transition-delay: 0.1s; }
-    .fade-up.delay-2 { transition-delay: 0.2s; }
-    .fade-up.delay-3 { transition-delay: 0.3s; }
-    .fade-up.delay-4 { transition-delay: 0.4s; }
-    .fade-up.delay-5 { transition-delay: 0.5s; }
-
-    /* ============================================================
-       NAV
-    ============================================================ */
-    nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 100;
-      padding: 16px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: rgba(10, 10, 15, 0.8);
-      backdrop-filter: blur(20px) saturate(1.8);
-      -webkit-backdrop-filter: blur(20px) saturate(1.8);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .nav-logo {
-      font-family: var(--mono);
-      font-size: 0.8rem;
-      color: var(--ocean);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      font-weight: 600;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 28px;
-      list-style: none;
-    }
-
-    .nav-links a {
-      font-size: 0.875rem;
-      color: var(--text-muted);
-      transition: color 0.2s;
-    }
-
-    .nav-links a:hover {
-      color: var(--text);
-    }
-
-    /* ============================================================
-       HERO
-    ============================================================ */
-    .hero {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      padding-top: 80px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 60% 50% at 50% 0%, rgba(0,160,200,0.12) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 40% at 80% 80%, rgba(255,45,120,0.06) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 40% at 20% 70%, rgba(245,166,35,0.05) 0%, transparent 60%);
-      pointer-events: none;
-    }
-
-    /* animated gradient border on hero content */
-    .hero-card {
-      position: relative;
-      border-radius: 24px;
-      padding: 3px;
-      background: linear-gradient(
-        135deg,
-        var(--ocean),
-        var(--neon-pink),
-        var(--amber),
-        var(--teal),
-        var(--ocean)
-      );
-      background-size: 300% 300%;
-      animation: gradient-shift 6s ease infinite;
-    }
-
-    @keyframes gradient-shift {
-      0%   { background-position: 0% 50%; }
-      50%  { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    .hero-card-inner {
-      background: var(--bg);
-      border-radius: 22px;
-      padding: 64px 56px;
-      text-align: center;
-    }
-
-    .hero-icon-area {
-      width: 120px;
-      height: 120px;
-      margin: 0 auto 36px;
-      border-radius: 26px;
-      background: linear-gradient(145deg, #1a2a38, #0d1a24);
-      border: 1px solid rgba(0,160,200,0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 56px;
-      box-shadow:
-        0 0 0 1px rgba(0,160,200,0.1),
-        0 20px 60px rgba(0,0,0,0.6),
-        inset 0 1px 0 rgba(255,255,255,0.06);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero-icon-area::after {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 50%;
-      background: linear-gradient(to bottom, rgba(255,255,255,0.06), transparent);
-      border-radius: 26px 26px 0 0;
-    }
-
-    .hero-tagline {
-      font-size: clamp(1.6rem, 4vw, 2.6rem);
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 16px;
-      letter-spacing: -0.025em;
-    }
-
-    .hero-tagline span {
-      background: linear-gradient(90deg, var(--neon-pink), var(--amber));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero-subtitle {
-      font-size: 1.15rem;
-      color: var(--text-muted);
-      margin-bottom: 48px;
-      max-width: 480px;
+      width: 87.5%;
       margin-left: auto;
       margin-right: auto;
+      padding-left: 12.5%;
+      font-family: Palatino, "Palatino Linotype", "Palatino LT STD",
+                   "Book Antiqua", Georgia, serif;
+      background-color: var(--bg);
+      color: var(--fg);
+      max-width: 1400px;
+      counter-reset: sidenote-counter;
     }
 
-    .hero-subtitle strong {
-      color: var(--ocean);
-      font-weight: 600;
+    /* ---- Typography ---- */
+
+    h1 {
+      font-weight: 400;
+      margin-top: 4rem;
+      margin-bottom: 1.5rem;
+      font-size: 3.2rem;
+      line-height: 1;
     }
 
-    .btn-group {
-      display: flex;
-      gap: 14px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 14px 26px;
-      border-radius: 12px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
-      cursor: pointer;
-      text-decoration: none;
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-    }
-
-    .btn-primary {
-      background: var(--ocean);
-      color: #fff;
-      box-shadow: 0 4px 20px rgba(0,160,200,0.4);
-    }
-
-    .btn-primary:hover {
-      background: var(--ocean-bright);
-      box-shadow: 0 8px 30px rgba(0,160,200,0.5);
-      color: #fff;
-    }
-
-    .btn-secondary {
-      background: rgba(255,255,255,0.06);
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-
-    .btn-secondary:hover {
-      background: rgba(255,255,255,0.1);
-      color: var(--text);
-    }
-
-    .btn-testflight {
-      background: rgba(245,166,35,0.12);
-      color: var(--amber);
-      border: 1px solid rgba(245,166,35,0.25);
-    }
-
-    .btn-testflight:hover {
-      background: rgba(245,166,35,0.2);
-      color: var(--amber);
-    }
-
-    .hero-footnote {
-      margin-top: 24px;
-      font-size: 0.78rem;
-      color: var(--text-dim);
-      font-family: var(--mono);
-    }
-
-    /* ============================================================
-       PARALLAX STARS
-    ============================================================ */
-    .stars {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      overflow: hidden;
-    }
-
-    .star {
-      position: absolute;
-      width: 2px;
-      height: 2px;
-      background: rgba(255,255,255,0.4);
-      border-radius: 50%;
-      animation: twinkle linear infinite;
-    }
-
-    @keyframes twinkle {
-      0%, 100% { opacity: 0.2; }
-      50% { opacity: 0.8; }
-    }
-
-    /* ============================================================
-       PLATFORM BAR
-    ============================================================ */
-    .platform-bar {
-      padding: 0;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      background: var(--bg-card);
-      overflow: hidden;
-    }
-
-    .platform-bar .container {
-      display: flex;
-      align-items: stretch;
-      gap: 0;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-
-    .platform-bar .container::-webkit-scrollbar { display: none; }
-
-    .platform-item {
-      flex: 1;
-      min-width: 160px;
-      padding: 28px 20px;
-      text-align: center;
-      border-right: 1px solid var(--border);
-      transition: background 0.2s;
-    }
-
-    .platform-item:last-child { border-right: none; }
-    .platform-item:hover { background: rgba(255,255,255,0.02); }
-
-    .platform-label {
-      font-size: 0.72rem;
-      font-family: var(--mono);
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 6px;
-    }
-
-    .platform-name {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 6px;
-    }
-
-    .platform-version {
-      font-family: var(--mono);
-      font-size: 0.72rem;
-      color: var(--ocean);
-      word-break: break-all;
-    }
-
-    .platform-icon {
-      font-size: 1.4rem;
-      margin-bottom: 8px;
-      display: block;
-    }
-
-    /* ============================================================
-       SECTION HEADERS
-    ============================================================ */
-    .section-label {
-      font-family: var(--mono);
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--ocean);
-      margin-bottom: 14px;
-      display: block;
-    }
-
-    .section-title {
-      margin-bottom: 16px;
-    }
-
-    .section-desc {
-      max-width: 560px;
-      margin-bottom: 64px;
-    }
-
-    /* ============================================================
-       FEATURES
-    ============================================================ */
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-    }
-
-    .feature-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 32px;
-      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .feature-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(0,160,200,0.4), transparent);
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-
-    .feature-card:hover {
-      border-color: rgba(0,160,200,0.25);
-      transform: translateY(-4px);
-      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
-    }
-
-    .feature-card:hover::before {
-      opacity: 1;
-    }
-
-    .feature-icon {
+    h2 {
+      font-style: italic;
+      font-weight: 400;
+      margin-top: 2.1rem;
+      margin-bottom: 1.4rem;
       font-size: 2.2rem;
-      margin-bottom: 18px;
+      line-height: 1;
+    }
+
+    h3 {
+      font-style: italic;
+      font-weight: 400;
+      font-size: 1.7rem;
+      margin-top: 2rem;
+      margin-bottom: 1.4rem;
+      line-height: 1;
+    }
+
+    h4 {
+      font-style: normal;
+      font-weight: 400;
+      font-size: 1.3rem;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    p, dl, ol, ul {
+      font-size: 1.4rem;
+      line-height: 2rem;
+    }
+
+    p {
+      margin-top: 1.4rem;
+      margin-bottom: 1.4rem;
+      padding-right: 0;
+      vertical-align: baseline;
+    }
+
+    hr {
+      display: block;
+      height: 1px;
+      width: 55%;
+      border: 0;
+      border-top: 1px solid var(--rule);
+      margin: 1em 0;
+      padding: 0;
+    }
+
+    article { padding: 5rem 0; }
+    section { padding-top: 1rem; padding-bottom: 1rem; }
+
+    /* ---- Width constraints ---- */
+
+    section > p,
+    section > footer,
+    section > table { width: 55%; }
+
+    section > dl,
+    section > ol,
+    section > ul {
+      width: 50%;
+      -webkit-padding-start: 5%;
+    }
+
+    figure {
+      padding: 0; border: 0;
+      font-size: 100%; font: inherit;
+      vertical-align: baseline;
+      max-width: 55%;
+      margin: 0 0 3em 0;
+    }
+
+    figcaption {
+      float: right; clear: right;
+      margin-top: 0; margin-bottom: 0;
+      font-size: 1.1rem; line-height: 1.6;
+      vertical-align: baseline; position: relative;
+      max-width: 40%;
+    }
+
+    /* ---- Links ---- */
+
+    a:link, a:visited {
+      color: inherit;
+      text-decoration-color: var(--link-underline);
+      text-underline-offset: 0.15em;
+      text-decoration-thickness: 0.05em;
+    }
+
+    a:hover {
+      text-decoration-color: var(--fg);
+    }
+
+    /* ---- Sidenotes & Marginnotes ---- */
+
+    .sidenote, .marginnote {
+      float: right;
+      clear: right;
+      margin-right: -60%;
+      width: 50%;
+      margin-top: 0.3rem;
+      margin-bottom: 0;
+      font-size: 1.1rem;
+      line-height: 1.3;
+      vertical-align: baseline;
+      position: relative;
+    }
+
+    .sidenote-number { counter-increment: sidenote-counter; }
+
+    .sidenote-number:after, .sidenote:before {
+      position: relative; vertical-align: baseline;
+    }
+
+    .sidenote-number:after {
+      content: counter(sidenote-counter);
+      font-size: 1rem; top: -0.5rem; left: 0.1rem;
+    }
+
+    .sidenote:before {
+      content: counter(sidenote-counter) " ";
+      font-size: 1rem; top: -0.5rem;
+    }
+
+    input.margin-toggle { display: none; }
+    label.sidenote-number { display: inline-block; max-height: 2rem; }
+    label.margin-toggle:not(.sidenote-number) { display: none; }
+
+    /* ---- Epigraph ---- */
+
+    div.epigraph { margin: 5em 0; }
+    div.epigraph > blockquote { margin-top: 3em; margin-bottom: 3em; }
+    div.epigraph > blockquote, div.epigraph > blockquote > p { font-style: italic; }
+    div.epigraph > blockquote > footer { font-style: normal; }
+    div.epigraph > blockquote > footer > cite { font-style: italic; }
+
+    blockquote { font-size: 1.4rem; }
+    blockquote p { width: 55%; margin-right: 40px; }
+    blockquote footer { width: 55%; font-size: 1.1rem; text-align: right; }
+
+    /* ---- Code ---- */
+
+    code, pre > code {
+      font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+      font-size: 1.0rem;
+      line-height: 1.42;
+    }
+
+    pre > code {
+      font-size: 0.9rem;
+      width: 52.5%;
+      margin-left: 2.5%;
+      overflow-x: auto;
+      display: block;
+    }
+
+    pre.fullwidth > code { width: 90%; }
+
+    code {
+      background: var(--code-bg);
+      padding: 0.1em 0.3em;
+      border-radius: 3px;
+    }
+
+    pre > code {
+      background: var(--code-bg);
+      padding: 1em 1.5em;
+      border-radius: 4px;
+    }
+
+    .marginnote > code, .sidenote > code { font-size: 1rem; }
+
+    /* ---- Fullwidth ---- */
+
+    div.fullwidth, table.fullwidth { width: 100%; }
+    .fullwidth { max-width: 90%; clear: both; }
+
+    figure.fullwidth figcaption { margin-right: 24%; }
+
+    /* ---- Tables ---- */
+
+    table {
+      border-collapse: collapse;
+      font-size: 1.1rem;
+      line-height: 1.5;
+    }
+
+    th {
+      font-weight: 400;
+      border-bottom: 2px solid var(--fg);
+      padding: 0.4em 1em 0.4em 0;
+      text-align: left;
+    }
+
+    td {
+      padding: 0.4em 1em 0.4em 0;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    tr:nth-child(even) { background: var(--table-stripe); }
+
+    /* Feature matrix status markers */
+    .st { font-size: 1.2em; }
+    .st-done { color: var(--status-done); }
+    .st-wip { color: var(--status-wip); }
+    .st-designed { color: var(--status-designed); }
+    .st-na { color: var(--status-na); }
+
+    /* ---- Special elements ---- */
+
+    span.newthought {
+      font-variant: small-caps;
+      font-size: 1.2em;
+    }
+
+    .subtitle {
+      font-style: italic;
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+      font-size: 1.8rem;
       display: block;
       line-height: 1;
     }
 
-    .feature-card h3 {
-      color: var(--text);
-      margin-bottom: 10px;
+    .sans {
+      font-family: "Gill Sans", "Gill Sans MT", Calibri, sans-serif;
+      letter-spacing: .03em;
     }
 
-    .feature-card p {
-      font-size: 0.9rem;
-    }
+    img { max-width: 100%; }
 
-    /* gesture table */
-    .gesture-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 16px;
-      font-size: 0.85rem;
-    }
+    /* ---- Brand lockup ---- */
 
-    .gesture-table tr {
-      border-bottom: 1px solid var(--border);
-    }
-
-    .gesture-table tr:last-child {
-      border-bottom: none;
-    }
-
-    .gesture-table td {
-      padding: 7px 4px;
-      color: var(--text-muted);
-    }
-
-    .gesture-table td:first-child {
-      font-size: 1.2rem;
-      width: 36px;
-    }
-
-    .gesture-table td:last-child {
-      color: var(--text-dim);
-      font-size: 0.78rem;
-      text-align: right;
-      font-family: var(--mono);
-    }
-
-    /* beaver card */
-    .feature-card.beaver-card {
-      border-color: rgba(245,166,35,0.2);
-      background: linear-gradient(135deg, #12120a, #1a1a0d);
-    }
-
-    .feature-card.beaver-card:hover {
-      border-color: rgba(245,166,35,0.4);
-    }
-
-    .feature-card.beaver-card::before {
-      background: linear-gradient(90deg, transparent, rgba(245,166,35,0.4), transparent);
-    }
-
-    /* ============================================================
-       GANTT
-    ============================================================ */
-    .gantt-section {
-      background: linear-gradient(to bottom, var(--bg), #0c0c16, var(--bg));
-    }
-
-    .gantt-wrapper {
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      background: #1a1a2e;
-    }
-
-    .gantt-wrapper svg {
-      display: block;
-      width: 100%;
-      height: auto;
-    }
-
-    .gantt-caption {
-      padding: 16px 20px;
-      border-top: 1px solid var(--border);
-      font-size: 0.8rem;
-      color: var(--text-dim);
-      font-family: var(--mono);
-      background: var(--bg-card);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .gantt-caption .progress-note {
-      color: var(--ocean);
-    }
-
-    /* ============================================================
-       BEAVER SECTION
-    ============================================================ */
-    .beaver-section {
-      background: var(--bg-card);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .beaver-hero {
-      text-align: center;
-      margin-bottom: 64px;
-    }
-
-    .beaver-emoji-big {
-      font-size: 5rem;
-      display: block;
-      margin-bottom: 24px;
-      animation: beaver-bob 3s ease-in-out infinite;
-    }
-
-    @keyframes beaver-bob {
-      0%, 100% { transform: translateY(0) rotate(-3deg); }
-      50% { transform: translateY(-8px) rotate(3deg); }
-    }
-
-    .tier-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      max-width: 720px;
-      margin: 0 auto;
-    }
-
-    .tier-card {
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 36px 28px;
-      position: relative;
-    }
-
-    .tier-card.free {
-      background: var(--bg);
-    }
-
-    .tier-card.pro {
-      background: linear-gradient(145deg, #0d1a24, #0a1420);
-      border-color: rgba(0,160,200,0.35);
-    }
-
-    .tier-card.pro::after {
-      content: 'RECOMMENDED';
-      position: absolute;
-      top: -12px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--ocean);
-      color: #fff;
-      font-size: 0.65rem;
-      font-family: var(--mono);
-      letter-spacing: 0.12em;
-      padding: 3px 12px;
-      border-radius: 20px;
-      font-weight: 700;
-    }
-
-    .tier-price {
-      font-size: 2.2rem;
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: -0.03em;
-      margin: 12px 0 4px;
-    }
-
-    .tier-price sub {
-      font-size: 1rem;
-      font-weight: 400;
-      color: var(--text-muted);
-      vertical-align: baseline;
-    }
-
-    .tier-period {
-      font-size: 0.78rem;
-      color: var(--text-dim);
-      font-family: var(--mono);
-      margin-bottom: 24px;
-    }
-
-    .tier-name {
-      font-size: 0.8rem;
-      font-family: var(--mono);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-    }
-
-    .tier-features {
-      list-style: none;
-      font-size: 0.88rem;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .tier-features li {
-      color: var(--text-muted);
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-    }
-
-    .tier-features li span:first-child {
-      flex-shrink: 0;
-    }
-
-    .tier-features li.highlight {
-      color: var(--text);
-    }
-
-    .tier-features li.beaver-feature {
-      color: var(--amber);
-    }
-
-    .beaver-fine-print {
-      margin-top: 48px;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-      text-align: center;
-      font-size: 0.82rem;
-      color: var(--text-dim);
-      font-family: var(--mono);
-      line-height: 1.6;
-    }
-
-    /* ============================================================
-       NEWSLETTER
-    ============================================================ */
-    .newsletter-section {
-      text-align: center;
-    }
-
-    .newsletter-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 64px 48px;
-      max-width: 600px;
-      margin: 0 auto;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .newsletter-card::before {
-      content: '';
-      position: absolute;
-      top: -60px; right: -60px;
-      width: 200px; height: 200px;
-      background: radial-gradient(circle, rgba(0,160,200,0.08) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    .newsletter-card::after {
-      content: '';
-      position: absolute;
-      bottom: -60px; left: -60px;
-      width: 200px; height: 200px;
-      background: radial-gradient(circle, rgba(255,45,120,0.05) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    .newsletter-card h2 {
+    .brand-lockup {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-weight: 900;
+      font-stretch: condensed;
+      letter-spacing: -0.02em;
+      line-height: 0.85;
       font-size: 1.8rem;
-      margin-bottom: 12px;
+      color: var(--fg);
+      margin: 2rem 0;
     }
 
-    .newsletter-card p {
-      margin-bottom: 32px;
+    .brand-lockup span {
+      display: block;
     }
 
-    .newsletter-form {
+    .brand-lockup .brand-3000 {
+      text-align: right;
+      max-width: 6.5em;
+      color: var(--accent);
+    }
+
+    /* ---- Architecture diagram ---- */
+
+    .arch-diagram {
+      font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      white-space: pre;
+      overflow-x: auto;
+      padding: 1.5em;
+      background: var(--code-bg);
+      border-radius: 4px;
+    }
+
+    /* ---- Phase timeline ---- */
+
+    .phase {
+      margin-top: 1.5rem;
+      padding-left: 1.5rem;
+      border-left: 2px solid var(--rule);
+    }
+
+    .phase-time {
+      font-variant: small-caps;
+      font-size: 1.1rem;
+      color: var(--fg-dim);
+    }
+
+    .phase-title {
+      font-size: 1.3rem;
+      font-weight: 400;
+      margin: 0.2rem 0 0.5rem;
+    }
+
+    .phase p {
+      font-size: 1.2rem;
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* ---- Platform badges ---- */
+
+    .platforms {
       display: flex;
-      gap: 10px;
-      max-width: 440px;
-      margin: 0 auto;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin: 2rem 0;
+      width: 55%;
     }
 
-    .newsletter-input {
-      flex: 1;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 13px 18px;
-      font-size: 0.95rem;
-      color: var(--text);
-      font-family: var(--sans);
-      outline: none;
-      transition: border-color 0.2s;
+    .platform-badge {
+      font-family: "Gill Sans", "Gill Sans MT", Calibri, sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border: 1px solid var(--rule);
+      padding: 0.4em 0.8em;
+      border-radius: 3px;
     }
 
-    .newsletter-input:focus {
-      border-color: rgba(0,160,200,0.5);
-      box-shadow: 0 0 0 3px rgba(0,160,200,0.08);
+    .platform-badge .version {
+      font-family: Consolas, Menlo, monospace;
+      font-size: 0.8rem;
+      color: var(--fg-dim);
+      margin-left: 0.3em;
     }
 
-    .newsletter-input::placeholder {
-      color: var(--text-dim);
+    /* ---- License acrostic ---- */
+
+    .acrostic-letter {
+      color: var(--accent);
+      font-weight: bold;
     }
 
-    .newsletter-note {
-      margin-top: 14px;
-      font-size: 0.78rem;
-      color: var(--text-dim);
-      font-family: var(--mono);
+    /* ---- Gesture grid ---- */
+
+    .gesture-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 0.5rem;
+      margin: 1rem 0;
     }
 
-    /* ============================================================
-       SOCIAL
-    ============================================================ */
-    .social-section {
-      padding: 64px 0;
+    .gesture-card {
       text-align: center;
+      padding: 0.8em 0.4em;
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      font-size: 0.95rem;
     }
+
+    .gesture-card .gesture-emoji {
+      font-size: 2rem;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .gesture-card .gesture-label {
+      font-size: 0.8rem;
+      color: var(--fg-dim);
+    }
+
+    /* ---- Newsletter ---- */
+
+    .newsletter {
+      margin: 2rem 0;
+      padding: 2rem 0;
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .newsletter input[type="email"] {
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 0.5em 0.8em;
+      border: 1px solid var(--rule);
+      border-radius: 3px;
+      background: var(--bg);
+      color: var(--fg);
+      width: 20em;
+      max-width: 100%;
+    }
+
+    .newsletter button {
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 0.5em 1.2em;
+      border: 1px solid var(--fg);
+      border-radius: 3px;
+      background: var(--fg);
+      color: var(--bg);
+      cursor: pointer;
+      margin-left: 0.5em;
+    }
+
+    .newsletter button:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* ---- Social links ---- */
 
     .social-links {
+      list-style: none;
+      padding: 0;
       display: flex;
-      gap: 16px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-top: 32px;
+      gap: 1.5rem;
+      font-size: 1.1rem;
     }
 
-    .social-link {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 22px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: var(--bg-card);
-      color: var(--text-muted);
-      font-size: 0.88rem;
-      font-weight: 500;
-      transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.15s;
+    .social-links a {
+      text-decoration: none;
     }
 
-    .social-link:hover {
-      border-color: rgba(0,160,200,0.3);
-      color: var(--text);
-      background: var(--bg-raised);
-      transform: translateY(-2px);
+    .social-links a:hover {
+      text-decoration: underline;
+      text-decoration-color: var(--fg);
     }
 
-    .social-icon {
-      width: 18px;
-      height: 18px;
-      flex-shrink: 0;
-      fill: currentColor;
+    /* ---- Responsive ---- */
+
+    @media (max-width: 760px) {
+      body {
+        width: 84%;
+        padding-left: 8%;
+        padding-right: 8%;
+      }
+
+      hr, section > p, section > footer, section > table { width: 100%; }
+      pre > code { width: 97%; }
+      section > dl, section > ol, section > ul { width: 90%; }
+      figure { max-width: 90%; }
+
+      figcaption, figure.fullwidth figcaption {
+        margin-right: 0%;
+        max-width: none;
+      }
+
+      blockquote { margin-left: 1.5em; margin-right: 0; }
+      blockquote p, blockquote footer { width: 100%; }
+
+      label.margin-toggle:not(.sidenote-number) { display: inline; cursor: pointer; }
+
+      .sidenote, .marginnote { display: none; }
+
+      .margin-toggle:checked + .sidenote,
+      .margin-toggle:checked + .marginnote {
+        display: block;
+        float: left;
+        left: 1rem;
+        clear: both;
+        width: 95%;
+        margin: 1rem 2.5%;
+        position: relative;
+      }
+
+      .platforms { width: 100%; }
+
+      div.table-wrapper, table { width: 85%; }
+      img { width: 100%; }
     }
 
-    /* ============================================================
-       FOOTER
-    ============================================================ */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 40px 24px;
-      text-align: center;
+    /* ---- Hidden easter eggs ---- */
+
+    .s-o-n-y-h-a-t-e { /* ... --- -. -.-- / .... .- - . / ...-- ----- ----- ----- */ }
+
+    /* ===========================================================
+       THEME: MIDMOD — Mid-Century Modern
+       Grayscale + one bold semi-transparent accent.
+       Bauhaus geometry, Rietveld palette, Eames-era warmth.
+       =========================================================== */
+
+    [data-theme="midmod"] {
+      --bg: #f4f1eb;
+      --fg: #1a1a1a;
+      --fg-dim: #4a4a4a;
+      --fg-faint: #8a8a8a;
+      --rule: #c8c4bc;
+      --code-bg: #eae6de;
+      --link-underline: rgba(0,0,0,0.15);
+      --accent: #cc2936;
+      --accent-alpha: rgba(204, 41, 54, 0.12);
+      --table-stripe: rgba(0,0,0,0.03);
+      --status-done: #1a1a1a;
+      --status-wip: #cc2936;
+      --status-designed: #8a8a8a;
+      --status-na: #c8c4bc;
     }
 
-    .footer-inner {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 14px;
+    @media (prefers-color-scheme: dark) {
+      [data-theme="midmod"] {
+        --bg: #1a1917;
+        --fg: #e8e4dc;
+        --fg-dim: #aaa69e;
+        --fg-faint: #6a665e;
+        --rule: #3a3630;
+        --code-bg: #242220;
+        --link-underline: rgba(255,255,255,0.15);
+        --accent: #e84855;
+        --accent-alpha: rgba(232, 72, 85, 0.15);
+        --table-stripe: rgba(255,255,255,0.03);
+        --status-done: #e8e4dc;
+        --status-wip: #e84855;
+        --status-designed: #6a665e;
+        --status-na: #3a3630;
+      }
     }
 
-    .footer-logo {
-      font-family: var(--mono);
-      font-size: 0.8rem;
-      color: var(--text-dim);
+    [data-theme="midmod"] body {
+      font-family: "Futura", "Century Gothic", "Gill Sans", "Gill Sans MT",
+                   Calibri, "Trebuchet MS", sans-serif;
+      letter-spacing: 0.01em;
+    }
+
+    [data-theme="midmod"] h1 {
+      font-weight: 300;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      font-size: 2.8rem;
+    }
+
+    [data-theme="midmod"] h2 {
+      font-style: normal;
+      font-weight: 300;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 1.6rem;
+      border-bottom: 3px solid var(--accent);
+      padding-bottom: 0.3em;
+      display: inline-block;
+    }
+
+    [data-theme="midmod"] h3 {
+      font-style: normal;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 1.1rem;
+    }
+
+    [data-theme="midmod"] .brand-lockup {
+      font-family: "Futura", "Century Gothic", sans-serif;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+    }
+
+    [data-theme="midmod"] .brand-3000 { color: var(--accent); }
+
+    [data-theme="midmod"] code, [data-theme="midmod"] pre > code {
+      font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+    }
+
+    [data-theme="midmod"] blockquote {
+      border-left: 4px solid var(--accent);
+      padding-left: 1.5em;
+      background: var(--accent-alpha);
+    }
+
+    [data-theme="midmod"] .acrostic-letter { color: var(--accent); }
+
+    [data-theme="midmod"] .gesture-card {
+      border: 2px solid var(--fg);
+      border-radius: 0;
+    }
+
+    [data-theme="midmod"] .platform-badge {
+      border: 2px solid var(--fg);
+      border-radius: 0;
+      text-transform: uppercase;
       letter-spacing: 0.08em;
     }
 
-    .footer-logo span {
-      color: var(--ocean);
+    [data-theme="midmod"] hr {
+      border-top: 3px solid var(--accent);
+      width: 3em;
     }
 
-    .footer-copy {
-      font-size: 0.82rem;
-      color: var(--text-dim);
-      line-height: 1.7;
+    /* Midmod color variants — rotate via JS */
+    [data-theme="midmod"][data-midmod-color="blue"] {
+      --accent: #264f78;
+      --accent-alpha: rgba(38, 79, 120, 0.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      [data-theme="midmod"][data-midmod-color="blue"] {
+        --accent: #5b9bd5;
+        --accent-alpha: rgba(91, 155, 213, 0.15);
+      }
     }
 
-    .footer-copy a {
-      color: var(--text-muted);
-      border-bottom: 1px solid var(--border);
+    [data-theme="midmod"][data-midmod-color="yellow"] {
+      --accent: #c49102;
+      --accent-alpha: rgba(196, 145, 2, 0.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      [data-theme="midmod"][data-midmod-color="yellow"] {
+        --accent: #f0c040;
+        --accent-alpha: rgba(240, 192, 64, 0.15);
+      }
     }
 
-    .footer-copy a:hover {
-      color: var(--ocean);
-      border-color: var(--ocean);
+    /* ===========================================================
+       THEME: BRESSON — Henri Cartier-Bresson
+       The Decisive Moment. Paris Left Bank intellectual.
+       Black & white, precise geometry, Leica-sharp.
+       High contrast. Sans-serif. Mathematical.
+       =========================================================== */
+
+    [data-theme="bresson"] {
+      --bg: #ffffff;
+      --fg: #000000;
+      --fg-dim: #333333;
+      --fg-faint: #777777;
+      --rule: #000000;
+      --code-bg: #f5f5f5;
+      --link-underline: rgba(0,0,0,0.3);
+      --accent: #000000;
+      --table-stripe: rgba(0,0,0,0.04);
+      --status-done: #000;
+      --status-wip: #666;
+      --status-designed: #aaa;
+      --status-na: #ddd;
     }
 
-    /* ============================================================
-       DIVIDER
-    ============================================================ */
-    .divider {
-      width: 64px;
-      height: 2px;
-      background: linear-gradient(90deg, var(--ocean), transparent);
-      margin: 0 auto 48px;
-      border-radius: 2px;
+    @media (prefers-color-scheme: dark) {
+      [data-theme="bresson"] {
+        --bg: #0a0a0a;
+        --fg: #f0f0f0;
+        --fg-dim: #cccccc;
+        --fg-faint: #777777;
+        --rule: #f0f0f0;
+        --code-bg: #151515;
+        --link-underline: rgba(255,255,255,0.3);
+        --accent: #f0f0f0;
+        --table-stripe: rgba(255,255,255,0.04);
+        --status-done: #f0f0f0;
+        --status-wip: #999;
+        --status-designed: #555;
+        --status-na: #333;
+      }
     }
 
-    /* ============================================================
-       RESPONSIVE
-    ============================================================ */
-    @media (max-width: 700px) {
-      .hero-card-inner { padding: 40px 28px; }
-      .nav-links { display: none; }
-      .tier-grid { grid-template-columns: 1fr; }
-      .newsletter-form { flex-direction: column; }
-      .platform-item { min-width: 130px; }
-      .features-grid { grid-template-columns: 1fr; }
-      section { padding: 64px 0; }
+    [data-theme="bresson"] body {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-weight: 300;
+      letter-spacing: 0;
     }
 
-    @media (max-width: 480px) {
-      .hero-card-inner { padding: 32px 20px; }
-      .btn-group { flex-direction: column; align-items: center; }
-      .btn { width: 100%; justify-content: center; }
+    [data-theme="bresson"] h1 {
+      font-weight: 100;
+      font-size: 4rem;
+      letter-spacing: -0.03em;
+      border-bottom: 1px solid var(--rule);
+      padding-bottom: 0.5rem;
     }
 
-    /* ============================================================
-       MISC
-    ============================================================ */
-    .text-accent { color: var(--ocean); }
-    .text-pink { color: var(--neon-pink); }
-    .text-amber { color: var(--amber); }
-    .text-teal { color: var(--teal); }
+    [data-theme="bresson"] h2 {
+      font-style: normal;
+      font-weight: 100;
+      font-size: 2rem;
+      letter-spacing: -0.02em;
+      text-transform: none;
+    }
 
-    .tag {
-      display: inline-block;
-      font-family: var(--mono);
-      font-size: 0.72rem;
-      padding: 3px 9px;
-      border-radius: 4px;
-      background: rgba(0,160,200,0.1);
-      color: var(--ocean);
-      border: 1px solid rgba(0,160,200,0.2);
+    [data-theme="bresson"] h3 {
+      font-style: normal;
+      font-weight: 400;
+      font-size: 1.3rem;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    [data-theme="bresson"] .brand-lockup {
+      font-family: "Helvetica Neue", Helvetica, sans-serif;
+      font-weight: 100;
+      letter-spacing: 0.4em;
+      font-size: 1.4rem;
+      line-height: 1.6;
+    }
+
+    [data-theme="bresson"] .brand-3000 { color: var(--fg); }
+
+    [data-theme="bresson"] .subtitle {
+      font-style: normal;
+      font-weight: 100;
+      letter-spacing: 0.02em;
+    }
+
+    [data-theme="bresson"] code, [data-theme="bresson"] pre > code {
+      font-family: "SF Mono", "Fira Code", Menlo, monospace;
+      font-weight: 300;
+    }
+
+    [data-theme="bresson"] .epigraph > blockquote,
+    [data-theme="bresson"] .epigraph > blockquote > p {
+      font-style: normal;
+      font-weight: 200;
+      font-size: 1.6rem;
+      letter-spacing: -0.01em;
+    }
+
+    [data-theme="bresson"] blockquote {
+      border-left: 1px solid var(--rule);
+      padding-left: 1.5em;
+    }
+
+    [data-theme="bresson"] .gesture-card {
+      border: 1px solid var(--rule);
+      border-radius: 0;
+    }
+
+    [data-theme="bresson"] .platform-badge {
+      border: 1px solid var(--rule);
+      border-radius: 0;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+    }
+
+    [data-theme="bresson"] hr {
+      border-top: 1px solid var(--rule);
+      width: 100%;
+    }
+
+    [data-theme="bresson"] th {
+      font-weight: 300;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 0.9rem;
+    }
+
+    [data-theme="bresson"] .acrostic-letter {
+      color: var(--fg);
+      font-weight: 600;
+    }
+
+    [data-theme="bresson"] .newsletter button {
+      border-radius: 0;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ===========================================================
+       THEME: CAPA — Robert Capa
+       The Greatest War Photographer. Danger & glamour.
+       Warm Mediterranean tones, film grain, slightly raw.
+       D-Day, the convertible, the Contax, the scandal.
+       =========================================================== */
+
+    [data-theme="capa"] {
+      --bg: #f5efe6;
+      --fg: #2c2416;
+      --fg-dim: #5c5040;
+      --fg-faint: #9c9080;
+      --rule: #c4b8a4;
+      --code-bg: #ede7dc;
+      --link-underline: rgba(44, 36, 22, 0.25);
+      --accent: #8b4513;
+      --table-stripe: rgba(44, 36, 22, 0.03);
+      --status-done: #2c2416;
+      --status-wip: #b8860b;
+      --status-designed: #9c9080;
+      --status-na: #c4b8a4;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      [data-theme="capa"] {
+        --bg: #1c1810;
+        --fg: #e8dcc8;
+        --fg-dim: #b8a888;
+        --fg-faint: #786848;
+        --rule: #3c3428;
+        --code-bg: #262018;
+        --link-underline: rgba(232, 220, 200, 0.25);
+        --accent: #d4a06a;
+        --table-stripe: rgba(232, 220, 200, 0.03);
+        --status-done: #e8dcc8;
+        --status-wip: #d4a06a;
+        --status-designed: #786848;
+        --status-na: #3c3428;
+      }
+    }
+
+    [data-theme="capa"] body {
+      font-family: "Charter", "Bitstream Charter", "Sitka Text",
+                   Cambria, serif;
+      /* Film grain overlay */
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      background-color: var(--bg);
+    }
+
+    [data-theme="capa"] h1 {
+      font-weight: 700;
+      font-size: 3rem;
+      font-style: italic;
+      letter-spacing: -0.02em;
+    }
+
+    [data-theme="capa"] h2 {
+      font-style: italic;
+      font-weight: 700;
+      font-size: 1.8rem;
+    }
+
+    [data-theme="capa"] h3 {
+      font-style: italic;
+      font-weight: 600;
+      font-size: 1.4rem;
+    }
+
+    [data-theme="capa"] .subtitle {
+      font-weight: 400;
+      font-size: 1.5rem;
+      letter-spacing: 0.02em;
+    }
+
+    [data-theme="capa"] .brand-lockup {
+      font-family: "Impact", "Haettenschweiler", "Arial Narrow Bold", sans-serif;
+      font-weight: 900;
       letter-spacing: 0.05em;
+      transform: rotate(-1deg);
+      display: inline-block;
     }
 
-    .tag.pink {
-      background: rgba(255,45,120,0.08);
-      color: var(--neon-pink);
-      border-color: rgba(255,45,120,0.2);
+    [data-theme="capa"] .brand-3000 { color: var(--accent); }
+
+    [data-theme="capa"] code, [data-theme="capa"] pre > code {
+      font-family: "Courier New", Courier, monospace;
     }
 
-    .tag.amber {
-      background: rgba(245,166,35,0.08);
-      color: var(--amber);
-      border-color: rgba(245,166,35,0.2);
+    [data-theme="capa"] .epigraph > blockquote,
+    [data-theme="capa"] .epigraph > blockquote > p {
+      font-style: italic;
+      font-size: 1.5rem;
     }
 
-    /* submit feedback */
-    .form-success {
-      display: none;
-      color: var(--teal);
-      font-family: var(--mono);
-      font-size: 0.88rem;
-      margin-top: 12px;
+    [data-theme="capa"] blockquote {
+      border-left: 3px solid var(--accent);
+      padding-left: 1.2em;
+    }
+
+    [data-theme="capa"] .gesture-card {
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      background: var(--code-bg);
+    }
+
+    [data-theme="capa"] .platform-badge {
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      font-style: italic;
+    }
+
+    [data-theme="capa"] hr {
+      border-top: 2px solid var(--accent);
+      width: 40%;
+    }
+
+    [data-theme="capa"] .acrostic-letter {
+      color: var(--accent);
+      font-weight: 900;
+    }
+
+    [data-theme="capa"] .newsletter button {
+      border-radius: 12px;
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    [data-theme="capa"] .newsletter input[type="email"] {
+      border-radius: 12px;
+    }
+
+    /* Film contact sheet vibe for images */
+    [data-theme="capa"] img {
+      filter: contrast(1.1) saturate(0.7);
+      border: 3px solid var(--fg);
+      padding: 2px;
+    }
+
+    [data-theme="capa"] .phase {
+      border-left: 3px solid var(--accent);
+    }
+
+    [data-theme="capa"] .phase-time {
+      font-style: italic;
+      font-weight: 600;
+    }
+
+    /* ===========================================================
+       THEME SWITCHER — floating pill in top-right
+       =========================================================== */
+
+    .theme-switcher {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.5rem;
+      z-index: 1000;
+      display: flex;
+      gap: 0;
+      background: var(--bg);
+      border: 1px solid var(--rule);
+      border-radius: 2rem;
+      padding: 0.2rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      font-family: "Gill Sans", "Gill Sans MT", Calibri, sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .theme-switcher button {
+      all: unset;
+      padding: 0.4em 0.8em;
+      cursor: pointer;
+      border-radius: 1.5rem;
+      color: var(--fg-dim);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .theme-switcher button:hover {
+      color: var(--fg);
+    }
+
+    .theme-switcher button.active {
+      background: var(--fg);
+      color: var(--bg);
+    }
+
+    @media (max-width: 760px) {
+      .theme-switcher {
+        top: auto;
+        bottom: 1rem;
+        right: 1rem;
+        font-size: 0.65rem;
+      }
     }
   </style>
 </head>
+</head>
 <body>
+<article>
 
-<!-- Cursor beaver -->
-<div id="cursor-beaver">🦫</div>
+  <!-- ============================================================
+       TITLE
+       ============================================================ -->
 
-<!-- Nav -->
-<nav>
-  <div class="nav-logo">CAMERA REMOTE <span style="color: var(--neon-pink);">3000</span></div>
-  <ul class="nav-links">
-    <li><a href="#features">Features</a></li>
-    <li><a href="#gantt">Progress</a></li>
-    <li><a href="#beaver">Pricing</a></li>
-    <li><a href="#newsletter">Updates</a></li>
-  </ul>
+  <h1>sonyctl</h1>
+  <p class="subtitle">A Complete Replacement for Sony Imaging Edge</p>
+
+  <div class="brand-lockup">
+    <span>D E A D</span>
+    <span>W A L K</span>
+    <span>M A N</span>
+    <span class="brand-3000">3 0 0 0</span>
+  </div>
+
+  <!-- SONY HATE 3000! -->
+
+  <section>
+    <div class="epigraph">
+      <blockquote>
+        <p>Sony Imaging Edge can go to hell. We built something better.</p>
+        <footer>—internal project memo, day one</footer>
+      </blockquote>
+      <blockquote>
+        <p>Above all else, show the data.</p>
+        <footer>Edward Tufte, <cite>The Visual Display of Quantitative Information</cite></footer>
+      </blockquote>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       BRANDING
+       ============================================================ -->
+
+  <section>
+    <h2>Branding</h2>
+
+    <p>
+      <span class="newthought">The internal codename is SONYHATE3000.</span>
+      The public-facing brand is <strong>DEAD/WALK/MAN 3000</strong>, styled after
+      the 1995 <a href="https://en.wikipedia.org/wiki/Dead_Man_Walking_(film)"><em>Dead Man Walking</em></a> movie
+      poster—bold condensed all-caps, each word on its own line, 3000 offset to the right in
+      accent color.
+      <label for="sn-brand" class="margin-toggle sidenote-number"></label>
+      <input type="checkbox" id="sn-brand" class="margin-toggle"/>
+      <span class="sidenote">
+        The App Store display name is "Camera Remote 3000" because lawyers.
+        The Ruby gem name is <code>progress_bar_none_overload_3000</code> because gems.
+        The unofficial codename is <em>Lights! Camera! Action!</em> for sensitive sensors.
+      </span>
+    </p>
+
+    <p>
+      The handle <code>@deadwalkman3000</code> is available on
+      <a href="https://instagram.com/deadwalkman3000">Instagram</a>,
+      <a href="https://twitter.com/deadwalkman3000">X</a>,
+      <a href="https://tiktok.com/@deadwalkman3000">TikTok</a>, and
+      <a href="https://bsky.app/profile/deadwalkman3000.bsky.social">Bluesky</a>.
+      <label for="sn-handles" class="margin-toggle sidenote-number"></label>
+      <input type="checkbox" id="sn-handles" class="margin-toggle"/>
+      <span class="sidenote">
+        <code>deadwalkman</code> (without 3000) was taken on Instagram and Bluesky.
+        <code>deadwalkman3000</code> is free everywhere. The 3000 is load-bearing.
+      </span>
+      The domain <code>deadwalkman3000.com</code> and all TLDs are available.
+      The current website lives at <a href="https://deadwalkman.amort.berlin">deadwalkman.amort.berlin</a>.
+    </p>
+  </section>
+
+  <!-- ============================================================
+       PLATFORMS
+       ============================================================ -->
+
+  <section>
+    <h2>Platforms</h2>
+
+    <div class="platforms">
+      <span class="platform-badge">CLI / Ruby <span class="version">3000.no.beaver.emoji.no.0.alpha.1</span></span>
+      <span class="platform-badge">macOS <span class="version">3000.0.0</span></span>
+      <span class="platform-badge">iOS <span class="version">3000.0.0</span></span>
+      <span class="platform-badge">watchOS <span class="version">3000.0.0</span></span>
+      <span class="platform-badge">Android <span class="version">3000.🦫.0-alpha.0</span></span>
+    </div>
+
+    <p>
+      <label for="mn-beaver" class="margin-toggle">&#8853;</label>
+      <input type="checkbox" id="mn-beaver" class="margin-toggle"/>
+      <span class="marginnote">
+        Apple and Ruby forbid emoji in version numbers. Android doesn't care.
+        The beaver emoji is present wherever the ecosystem permits it, absent where
+        bureaucracy prevails. This is a metaphor for something.
+      </span>
+      We attempted <code>3000.🦫.0-alpha.0</code> on every platform. Ruby's <code>Gem::Version</code>
+      requires ASCII. Apple's <code>CFBundleShortVersionString</code> allows only numbers and dots.
+      Android's <code>versionName</code> takes any string.
+      Git tags accept any bytes.
+    </p>
+  </section>
+
+  <!-- ============================================================
+       FEATURE MATRIX
+       ============================================================ -->
+
+  <section>
+    <h2>Feature Matrix</h2>
+
+    <p>
+      <span class="newthought">Tufte would encode</span> the third dimension (platform) as columns
+      in a 2D table. The implementation status is the data; the feature is the row; the platform
+      is the column. Every cell is information. No chartjunk.
+      <label for="sn-legend" class="margin-toggle sidenote-number"></label>
+      <input type="checkbox" id="sn-legend" class="margin-toggle"/>
+      <span class="sidenote">
+        Legend: <span class="st st-done">✅</span>&nbsp;done
+        <span class="st st-wip">🔨</span>&nbsp;coded/untested
+        <span class="st st-designed">📐</span>&nbsp;designed
+        <span class="st st-na">⬜</span>&nbsp;n/a
+        🦫&nbsp;pro-only.
+        The tree-structure indentation (├ └) groups related features
+        without adding a column—Tufte's "smallest effective difference."
+      </span>
+    </p>
+
+    <div class="fullwidth">
+    <div class="table-wrapper">
+    <table class="fullwidth">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>CLI</th>
+          <th>macOS</th>
+          <th>iOS</th>
+          <th>watchOS</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="6"><strong>Camera Control</strong></td></tr>
+        <tr><td>├ Photo capture</td><td class="st st-done">✅</td><td class="st st-done">✅</td><td class="st st-wip">🔨</td><td class="st st-wip">🔨</td><td>USB gphoto2 + WiFi CCAPI + AVFoundation</td></tr>
+        <tr><td>├ Video start/stop</td><td class="st st-done">✅</td><td class="st st-done">✅</td><td class="st st-wip">🔨</td><td class="st st-wip">🔨</td><td>Watch sends via WCSession relay</td></tr>
+        <tr><td>├ Live preview feed</td><td class="st st-done">✅</td><td class="st st-done">✅</td><td class="st st-wip">🔨</td><td class="st st-wip">🔨</td><td>Watch: 272×170 JPEG, 0.4q, &lt;60KB</td></tr>
+        <tr><td>├ ISO / aperture / shutter</td><td class="st st-done">✅</td><td class="st st-done">✅</td><td class="st st-wip">🔨</td><td class="st st-na">⬜</td><td>Read + write via Sony config API</td></tr>
+        <tr><td>├ White balance</td><td class="st st-done">✅</td><td class="st st-wip">🔨</td><td class="st st-designed">📐</td><td class="st st-na">⬜</td><td></td></tr>
+        <tr><td>├ Focus mode</td><td class="st st-done">✅</td><td class="st st-designed">📐</td><td class="st st-designed">📐</td><td class="st st-na">⬜</td><td>AF-S / AF-C / MF</td></tr>
+        <tr><td>├ Generic camera</td><td class="st st-done">✅</td><td class="st st-done">✅</td><td class="st st-wip">🔨</td><td class="st st-na">⬜</td><td>Any AVFoundation camera (USB, built-in, virtual)</td></tr>
+        <tr><td>├ Sony WiFi (CCAPI)</td><td class="st st-done">✅</td><td class="st st-done">✅</td><td class="st st-wip">🔨</td><td class="st st-na">⬜</td><td><code>--wifi &lt;ip&gt;</code> flag · Camera menu</td></tr>
+        <tr><td>├ Save to Photos.app</td><td class="st st-na">⬜</td><td class="st st-done">✅</td><td class="st st-wip">🔨</td><td class="st st-na">⬜</td><td>PHPhotoLibrary, NSSavePanel, camera SD</td></tr>
+        <tr><td>├ Multi-camera recording</td><td class="st st-na">⬜</td><td class="st st-done">✅</td><td class="st st-designed">📐</td><td class="st st-na">⬜</td><td>Multiple simultaneous sources, per-screen preview</td></tr>
+        <tr><td>├ Multi-audio recording</td><td class="st st-na">⬜</td><td class="st st-done">✅</td><td class="st st-designed">📐</td><td class="st st-na">⬜</td><td>Independent mono/stereo WAV per input</td></tr>
+        <tr><td>└ Mic signal quality</td><td class="st st-na">⬜</td><td class="st st-done">✅</td><td class="st st-designed">📐</td><td class="st st-na">⬜</td><td>RMS/peak level, clipping detection</td></tr>
+
+        <tr><td colspan="6"><strong>Input Methods</strong></td></tr>
+        <tr><td>├ Hand gestures (Vision)</td><td class="st st-na">⬜</td><td class="st st-done">✅</td><td class="st st-wip">🔨</td><td class="st st-na">⬜</td><td>7 gestures, 0.8s hold, VNDetectHumanHandPose</td></tr>
+        <tr><td>├ Body pose detection</td><td class="st st-na">⬜</td><td class="st st-done">✅</td><td class="st st-designed">📐</td><td class="st st-na">⬜</td><td>VNDetectHumanBodyPose: arms raised → timer</td></tr>
+        <tr><td>├ Voice commands</td><td class="st st-na">⬜</td><td class="st st-done">✅</td><td class="st st-wip">🔨</td><td class="st st-wip">🔨</td><td>12 languages, on-device model, system locale</td></tr>
+        <tr><td>├ Tongue snap</td><td class="st st-done">✅</td><td class="st st-done">✅</td><td class="st st-wip">🔨</td><td class="st st-wip">🔨</td><td>AVAudioEngine RMS spike, &lt;45ms duration gate</td></tr>
+        <tr><td>└ Touch / tap</td><td class="st st-na">⬜</td><td class="st st-done">✅</td><td class="st st-wip">🔨</td><td class="st st-wip">🔨</td><td>macOS: toolbar · iOS: full UI · Watch: tap grid</td></tr>
+
+        <tr><td colspan="6"><strong>Lighting</strong></td></tr>
+        <tr><td>├ Nanoleaf (REST)</td><td class="st st-done">✅</td><td class="st st-done">✅</td><td class="st st-wip">🔨</td><td class="st st-na">⬜</td><td>REST <code>/api/v1/{token}/state</code></td></tr>
+        <tr><td>├ HomeKit lights</td><td class="st st-na">⬜</td><td class="st st-done">✅</td><td class="st st-wip">🔨</td><td class="st st-wip">🔨</td><td>HMHomeManager, any HomeKit-compatible light</td></tr>
+        <tr><td>├ Brightness / CT</td><td class="st st-done">✅</td><td class="st st-done">✅</td><td class="st st-wip">🔨</td><td class="st st-na">⬜</td><td></td></tr>
+        <tr><td>├ Effects (43 installed)</td><td class="st st-done">✅</td><td class="st st-wip">🔨</td><td class="st st-wip">🔨</td><td class="st st-na">⬜</td><td>Including "Fucking Conscientiousnessfully"</td></tr>
+        <tr><td>├ Service mode</td><td class="st st-done">✅</td><td class="st st-done">✅</td><td class="st st-wip">🔨</td><td class="st st-na">⬜</td><td>Warm AF assist: 3200K at 60%</td></tr>
+        <tr><td>├ AI mood lighting</td><td class="st st-done">✅</td><td class="st st-designed">📐</td><td class="st st-designed">📐</td><td class="st st-na">⬜</td><td>Claude CLI → emotion → HSB</td></tr>
+        <tr><td>└ UDP panel streaming</td><td class="st st-done">✅</td><td class="st st-designed">📐</td><td class="st st-designed">📐</td><td class="st st-na">⬜</td><td>Per-panel RGB via port 60222</td></tr>
+
+        <tr><td colspan="6"><strong>App Features</strong></td></tr>
+        <tr><td>├ HUD overlay</td><td class="st st-na">⬜</td><td class="st st-done">✅</td><td class="st st-designed">📐</td><td class="st st-na">⬜</td><td>Translucent status: ISO/SS/f/WB</td></tr>
+        <tr><td>├ Screen selection</td><td class="st st-na">⬜</td><td class="st st-done">✅</td><td class="st st-na">⬜</td><td class="st st-na">⬜</td><td>NSScreen.screens, multi-display</td></tr>
+        <tr><td>├ Localization</td><td class="st st-na">⬜</td><td class="st st-done">✅</td><td class="st st-wip">🔨</td><td class="st st-wip">🔨</td><td>30+ languages, localized voice commands</td></tr>
+        <tr><td>├ Settings view</td><td class="st st-na">⬜</td><td class="st st-done">✅</td><td class="st st-wip">🔨</td><td class="st st-na">⬜</td><td>Camera/mic/lights/screen pickers</td></tr>
+        <tr><td>├ 🦫 Watermark (free)</td><td class="st st-na">⬜</td><td class="st st-wip">🔨</td><td class="st st-wip">🔨</td><td class="st st-na">⬜</td><td>Beaver + "SONYHATE3000 Free" bar</td></tr>
+        <tr><td>├ Pro IAP ($8.99)</td><td class="st st-na">⬜</td><td class="st st-wip">🔨</td><td class="st st-wip">🔨</td><td class="st st-na">⬜</td><td>StoreKit 2, Non-Consumable, shared</td></tr>
+        <tr><td>└ WatchConnectivity</td><td class="st st-na">⬜</td><td class="st st-na">⬜</td><td class="st st-wip">🔨</td><td class="st st-wip">🔨</td><td>Phone↔Watch preview + commands</td></tr>
+
+        <tr><td colspan="6"><strong>Infrastructure</strong></td></tr>
+        <tr><td>├ Test suite</td><td class="st st-done">✅</td><td class="st st-designed">📐</td><td class="st st-designed">📐</td><td class="st st-na">⬜</td><td>CLI: 24/25 passing</td></tr>
+        <tr><td>├ Gantt dashboard</td><td class="st st-done">✅</td><td class="st st-na">⬜</td><td class="st st-na">⬜</td><td class="st st-na">⬜</td><td>Cockpit3000, 7 color modes, SVG</td></tr>
+        <tr><td>├ Diagnostics</td><td class="st st-done">✅</td><td class="st st-designed">📐</td><td class="st st-designed">📐</td><td class="st st-na">⬜</td><td>Camera, gphoto2, ffmpeg, Nanoleaf</td></tr>
+        <tr><td>└ Website</td><td class="st st-done">✅</td><td class="st st-na">⬜</td><td class="st st-na">⬜</td><td class="st st-na">⬜</td><td>This page</td></tr>
+      </tbody>
+    </table>
+    </div>
+    </div>
+
+    <p>
+      <label for="sn-matrix" class="margin-toggle sidenote-number"></label>
+      <input type="checkbox" id="sn-matrix" class="margin-toggle"/>
+      <span class="sidenote">
+        Reading this table: CLI has the most ✅ because it's the oldest. macOS standalone
+        now matches thanks to WiFi, AVFoundation cameras, HomeKit, body pose, and screen selection.
+        iOS/watchOS show 🔨 because the SwiftUI code is written but needs real-device testing.
+      </span>
+    </p>
+  </section>
+
+  <!-- ============================================================
+       ARCHITECTURE
+       ============================================================ -->
+
+  <section>
+    <h2>Architecture</h2>
+
+    <p>
+      <span class="newthought">The system is a federation</span> of Ruby, Swift, and SwiftUI
+      components communicating over USB (gphoto2), WiFi (HTTP JSON-RPC), HTTP IPC, and
+      WatchConnectivity. The camera source is abstracted behind a protocol so USB, WiFi,
+      and generic AVFoundation cameras are interchangeable at runtime.
+      <label for="sn-arch" class="margin-toggle sidenote-number"></label>
+      <input type="checkbox" id="sn-arch" class="margin-toggle"/>
+      <span class="sidenote">
+        The <code>CameraSource</code> protocol unifies all camera types: <code>capture()</code>,
+        <code>capturePreview()</code>, <code>adjustISO()</code>, <code>toggleRecording()</code>.
+        Similarly, <code>LightController</code> unifies Nanoleaf REST and HomeKit HMHomeManager.
+      </span>
+    </p>
+
+    <figure class="fullwidth">
+    <pre class="arch-diagram">┌─────────────────────────────────────────────────────────────────┐
+│                     SONY ILCE-7C Camera                         │
+│                   USB (gphoto2) ◄──── CLI + macOS standalone    │
+│                   WiFi (CCAPI HTTP) ◄──── ALL platforms         │
+└─────────────────────────────────────────────────────────────────┘
+        │                           │
+        ▼                           ▼
+┌─────────────────┐  ┌───────────────────────────────────────┐
+│  Any Camera     │  │  Any HomeKit Light  +  Nanoleaf      │
+│  (AVFoundation) │  │  (HMHomeManager)       (Direct REST) │
+└─────────────────┘  └───────────────────────────────────────┘
+        │                           │
+        ▼                           ▼
+┌───────────────┐           ┌───────────────────┐
+│  ruby/        │           │  xcode/           │
+│  sonyctl.rb   │           │  SONYHATE3000/    │  macOS SwiftUI
+│  nanoleaf.rb  │           │  SONYHATE3000iOS/ │  iOS SwiftUI
+│  sonyctl_*.rb │           │  SONYHATE3000Watch│  watchOS
+└───────────────┘           │  Shared/          │  Cross-platform
+        │                   └───────────────────┘
+        ▼                           │
+┌───────────────┐           ┌───────────────────┐
+│  swift/       │           │  Shared/          │
+│  sonyctl-live │           │  SonyCameraAPI    │  Actor-based async
+│  sonyctl-snap │           │  WCMessages       │  Watch↔Phone
+└───────────────┘           └───────────────────┘
+        │
+        ▼
+┌───────────────────────────────────────┐
+│  Nanoleaf Canvas E528 (17 panels)     │
+│  REST :16021 + UDP streaming :60222   │
+└───────────────────────────────────────┘</pre>
+    </figure>
+
+    <h3>Why WiFi, Not USB, for the App Store</h3>
+
+    <p>
+      The CLI uses gphoto2 over USB—fast, reliable, battle-tested. But macOS App Store apps
+      live in a sandbox that blocks IOKit (USB access), killing <code>ptpcamerad</code> (requires
+      <code>sudo</code>), and loading dynamic plugins from outside the app bundle.
+      <label for="sn-wifi" class="margin-toggle sidenote-number"></label>
+      <input type="checkbox" id="sn-wifi" class="margin-toggle"/>
+      <span class="sidenote">
+        Sony's WiFi CCAPI (PC Remote over HTTP) is just REST calls. Only needs
+        <code>com.apple.security.network.client</code>. Even Adobe Lightroom's
+        Mac App Store version can't do USB tethering—we're in good company.
+      </span>
+    </p>
+  </section>
+
+  <!-- ============================================================
+       INPUT METHODS — GESTURES & VOICE
+       ============================================================ -->
+
+  <section>
+    <h2>Input Methods</h2>
+
+    <h3>Hand Gestures</h3>
+
+    <p>
+      Seven gestures recognized via Apple's Vision framework (<code>VNDetectHumanHandPoseRequest</code>),
+      each requiring a 0.8-second hold to prevent accidental triggers.
+      <label for="mn-gestures" class="margin-toggle">&#8853;</label>
+      <input type="checkbox" id="mn-gestures" class="margin-toggle"/>
+      <span class="marginnote">
+        The gesture cheat sheet is built into the sonyctl-live HUD. Press <code>C</code> to toggle it.
+      </span>
+    </p>
+
+    <div class="gesture-grid" style="width: 55%;">
+      <div class="gesture-card"><span class="gesture-emoji">✋</span>Capture<div class="gesture-label">Open Palm</div></div>
+      <div class="gesture-card"><span class="gesture-emoji">✊</span>Record<div class="gesture-label">Fist</div></div>
+      <div class="gesture-card"><span class="gesture-emoji">✌️</span>Preview<div class="gesture-label">Peace</div></div>
+      <div class="gesture-card"><span class="gesture-emoji">👍</span>ISO +<div class="gesture-label">Thumbs Up</div></div>
+      <div class="gesture-card"><span class="gesture-emoji">👎</span>ISO −<div class="gesture-label">Thumbs Down</div></div>
+      <div class="gesture-card"><span class="gesture-emoji">☝️</span>Gestures<div class="gesture-label">Point</div></div>
+      <div class="gesture-card"><span class="gesture-emoji">👌</span>Confirm<div class="gesture-label">OK Sign</div></div>
+    </div>
+
+    <h3>Body Pose</h3>
+
+    <p>
+      Full body pose detection via <code>VNDetectHumanBodyPoseRequest</code>. Currently
+      recognizes arms raised (both wrists above both shoulders), which triggers a 3-second
+      timer shot—enough time to lower your arms and pose.
+      <label for="sn-pose" class="margin-toggle sidenote-number"></label>
+      <input type="checkbox" id="sn-pose" class="margin-toggle"/>
+      <span class="sidenote">
+        Body pose and hand gesture detection run simultaneously on the same
+        AVCaptureSession video frames. The Vision framework handles the multiplexing.
+      </span>
+    </p>
+
+    <h3>Voice Commands</h3>
+
+    <p>
+      Speech recognition via <code>SFSpeechRecognizer</code> using the system locale, with
+      fallback to <code>en-US</code>. Twelve language packs include native command words plus
+      English fallbacks:
+    </p>
+
+    <table>
+      <thead><tr><th>Language</th><th>"capture"</th><th>"record"</th><th>"stop"</th></tr></thead>
+      <tbody>
+        <tr><td>English</td><td>capture, shoot, take photo</td><td>record, start recording</td><td>stop</td></tr>
+        <tr><td>German</td><td>aufnahme, foto, auslösen</td><td>aufnehmen, video</td><td>stopp, halt</td></tr>
+        <tr><td>Japanese</td><td>撮影, 撮って, シャッター</td><td>録画, ビデオ</td><td>ストップ, 止めて</td></tr>
+        <tr><td>Spanish</td><td>captura, foto, dispara</td><td>grabar, video</td><td>para, detener</td></tr>
+        <tr><td>French</td><td>capture, photo, déclenche</td><td>enregistre, vidéo</td><td>arrête, stop</td></tr>
+        <tr><td>Korean</td><td>촬영, 찍어, 셔터</td><td>녹화, 비디오</td><td>정지, 멈춰</td></tr>
+      </tbody>
+    </table>
+
+    <p>
+      <label for="mn-voice" class="margin-toggle">&#8853;</label>
+      <input type="checkbox" id="mn-voice" class="margin-toggle"/>
+      <span class="marginnote">
+        Six additional languages supported: Chinese (zh-Hans), Italian, Portuguese, Dutch,
+        Russian, and Chinese Traditional (zh-Hant). Each language pack includes English
+        keywords as fallbacks, so "capture" always works regardless of locale.
+      </span>
+    </p>
+
+    <h3>Tongue Snap</h3>
+
+    <p>
+      An AVAudioEngine impulse detector: RMS threshold 0.12, duration gate &lt;45ms
+      (rejects sustained sounds like speech), 0.8-second cooldown.
+      Buffer size 512 frames (~11.6ms at 44.1kHz), exponential moving average baseline
+      (alpha 0.001). A spike that exceeds baseline + 0.12 and lasts less than 45ms fires
+      the shutter.
+    </p>
+  </section>
+
+  <!-- ============================================================
+       MULTI-CAMERA & MULTI-AUDIO
+       ============================================================ -->
+
+  <section>
+    <h2>Multi-Camera & Multi-Audio</h2>
+
+    <p>
+      <span class="newthought">Record from multiple cameras simultaneously.</span>
+      Each source gets its own preview window, which can be placed on any connected
+      display via the Displays menu. The <code>MultiCameraManager</code> maintains
+      independent <code>CameraSlot</code> instances with their own preview pollers
+      and target screens.
+      <label for="sn-multicam" class="margin-toggle sidenote-number"></label>
+      <input type="checkbox" id="sn-multicam" class="margin-toggle"/>
+      <span class="sidenote">
+        Camera sources are discovered via <code>AVCaptureDevice.DiscoverySession</code>
+        with device types <code>.builtInWideAngleCamera</code> and <code>.external</code>.
+        Sony cameras appear as external devices when connected via USB; via WiFi, they use
+        the CCAPI HTTP source.
+      </span>
+    </p>
+
+    <p>
+      Audio recording supports any combination of available inputs as independent tracks.
+      Each input gets its own <code>AVAudioEngine</code> writing to a separate WAV file,
+      synchronized by timestamp. The <code>MicrophoneMonitor</code> displays real-time
+      signal quality for all available microphones:
+      <label for="sn-mic" class="margin-toggle sidenote-number"></label>
+      <input type="checkbox" id="sn-mic" class="margin-toggle"/>
+      <span class="sidenote">
+        Signal quality labels: Silent (&lt;-60dB), Weak (-60 to -40dB),
+        Good (-40 to -12dB), Strong (-12 to -3dB), Loud (-3 to 0dB),
+        CLIPPING (0dB). Color-coded in the Microphone menu.
+      </span>
+    </p>
+
+    <h3>Save Destinations</h3>
+
+    <p>
+      Captured photos can be routed to multiple destinations:
+    </p>
+
+    <ul>
+      <li><strong>File System</strong> — <code>NSSavePanel</code> with configurable default folder</li>
+      <li><strong>Photos.app</strong> — <code>PHPhotoLibrary</code> with automatic album creation (<em>DEAD/WALK/MAN 3000</em>)</li>
+      <li><strong>Camera SD Card</strong> — photo stays on camera, no download</li>
+      <li><strong>File System + Photos.app</strong> — saves to both simultaneously</li>
+    </ul>
+    <p>
+      <label for="mn-save" class="margin-toggle">&#8853;</label>
+      <input type="checkbox" id="mn-save" class="margin-toggle"/>
+      <span class="marginnote">
+        Sony Imaging Edge saves wherever it pleases and makes you hunt for the file.
+        We ask politely, via the standard macOS save dialog.
+      </span>
+    </p>
+  </section>
+
+  <!-- ============================================================
+       LIGHTING
+       ============================================================ -->
+
+  <section>
+    <h2>Lighting</h2>
+
+    <p>
+      <span class="newthought">Two light control paths:</span> direct Nanoleaf REST API
+      for the Canvas E528 (17 panels, 43 effects), and Apple HomeKit for any compatible
+      light in any Home.app home.
+      <label for="sn-lights" class="margin-toggle sidenote-number"></label>
+      <input type="checkbox" id="sn-lights" class="margin-toggle"/>
+      <span class="sidenote">
+        The <code>LightController</code> protocol abstracts both:
+        <code>on()</code>, <code>off()</code>, <code>setBrightness()</code>,
+        <code>setColor(h:s:b:)</code>. Switch between Nanoleaf and HomeKit
+        in the Lights menu.
+      </span>
+    </p>
+
+    <table>
+      <thead><tr><th>Command</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><code>light on/off</code></td><td>Power toggle</td></tr>
+        <tr><td><code>light service</code></td><td>Warm AF assist: 3200K at 60%</td></tr>
+        <tr><td><code>light flash [b] [ct]</code></td><td>Full brightness burst</td></tr>
+        <tr><td><code>light effect [name]</code></td><td>Set Nanoleaf effect (43 available)</td></tr>
+        <tr><td><code>light mood &lt;emotion&gt;</code></td><td>AI-driven via Claude → HSB</td></tr>
+      </tbody>
+    </table>
+
+    <p>
+      <label for="mn-homekit" class="margin-toggle">&#8853;</label>
+      <input type="checkbox" id="mn-homekit" class="margin-toggle"/>
+      <span class="marginnote">
+        HomeKit integration uses <code>HMHomeManager</code> to discover homes, rooms,
+        and accessories with <code>HMServiceTypeLightbulb</code>. Controls power
+        (<code>HMCharacteristicTypePowerState</code>), brightness, hue, and saturation.
+        Requires <code>NSHomeKitUsageDescription</code> in Info.plist and the HomeKit
+        entitlement. Available on macOS, iOS, and watchOS.
+      </span>
+    </p>
+  </section>
+
+  <!-- ============================================================
+       CAMERA CONNECTION
+       ============================================================ -->
+
+  <section>
+    <h2>Camera Connection</h2>
+
+    <h3>USB Mode (gphoto2)</h3>
+
+    <p>
+      <label for="mn-usb-img" class="margin-toggle">&#8853;</label>
+      <input type="checkbox" id="mn-usb-img" class="margin-toggle"/>
+      <span class="marginnote">
+        <img src="doc/Screenshot%202026-03-04%20at%2023.19.45.png" alt="sonyctl Gantt chart showing build progress">
+        The Gantt chart rendered by <code>Cockpit3000::Gantt</code> in Tufte mode—ocean blues
+        for done tasks, warm amber for WIP.
+      </span>
+      <span class="newthought">Sony's USB implementation is,</span> characteristically,
+      hostile to the user. Read these instructions before connecting:
+    </p>
+
+    <ol>
+      <li><strong>Set USB Connection to PC Remote:</strong> <code>MENU → Setup → USB Connection → PC Remote</code>. Mass Storage and MTP will not work.</li>
+      <li><strong>Use a good cable.</strong> Not all USB-C cables carry data.</li>
+      <li><strong>Connect directly</strong> to your Mac's USB-C port. No hubs.</li>
+      <li><strong>Power cycle after changing settings.</strong> Off, change, on, plug in.</li>
+      <li><strong>macOS will steal the connection.</strong> <code>ptpcamerad</code> grabs the camera instantly. sonyctl kills it automatically.</li>
+    </ol>
+
+    <h3>WiFi Mode (Sony CCAPI)</h3>
+
+    <p>
+      For iOS, watchOS, and cable-free operation. HTTP JSON-RPC to port 8080.
+      <label for="sn-ccapi" class="margin-toggle sidenote-number"></label>
+      <input type="checkbox" id="sn-ccapi" class="margin-toggle"/>
+      <span class="sidenote">
+        Sony cameras broadcast <code>urn:schemas-sony-com:service:ScalarWebAPI:1</code>
+        via SSDP. The camera IP is typically <code>192.168.122.1</code>, shown on the
+        camera screen when WiFi is active.
+      </span>
+    </p>
+
+    <ol>
+      <li>Enable PC Remote over WiFi: <code>MENU → Network → PC Remote → PC Remote Cnct Method → Wi-Fi</code></li>
+      <li>Enable WiFi: <code>MENU → Network → Wi-Fi → Wi-Fi Connect → ON</code></li>
+      <li>Connect your device to the camera's WiFi: <code>DIRECT-xxxx:ILCE-7C</code></li>
+      <li>CLI: <code>ruby ruby/sonyctl.rb --wifi 192.168.122.1 status</code></li>
+      <li>macOS: <code>./sonyctl-live --wifi 192.168.122.1</code> or Camera menu → Sony WiFi</li>
+    </ol>
+
+    <h3>Generic Camera (AVFoundation)</h3>
+
+    <p>
+      Any camera that macOS recognizes works as an alternative to the Sony: built-in
+      FaceTime camera, USB webcams, virtual cameras (OBS, Camo), external capture cards.
+      Features are limited compared to Sony (no ISO/aperture control, basic capture only).
+      In sonyctl-live, select from the Camera menu.
+    </p>
+  </section>
+
+  <!-- ============================================================
+       THE BUILD — narrative of phases
+       ============================================================ -->
+
+  <section>
+    <h2>The Build</h2>
+
+    <p>
+      <span class="newthought">What follows is a chronicle</span> of how sonyctl was
+      built, in the order things happened. Each phase records the prompt that triggered it,
+      what was built, and what broke along the way.
+      <label for="sn-build" class="margin-toggle sidenote-number"></label>
+      <input type="checkbox" id="sn-build" class="margin-toggle"/>
+      <span class="sidenote">
+        The entire system—CLI, macOS app, iOS app, watchOS app, website, Gantt
+        chart, Nanoleaf integration—was built in a single session. The elapsed
+        times below are real.
+      </span>
+    </p>
+
+    <div class="phase">
+      <div class="phase-time">22:00 — 0:00 elapsed</div>
+      <div class="phase-title">Session Start</div>
+      <p>Plan acknowledged. 4 tasks created. 3 agents launched in parallel:
+      snap detector, live preview app, test suite. Main thread modifies <code>sonyctl.rb</code>.</p>
+    </div>
+
+    <div class="phase">
+      <div class="phase-time">22:01 — 0:01</div>
+      <div class="phase-title">Ruby CLI v2.0.0</div>
+      <p><code>AudioRecorder</code> module, <code>LiveBridge</code> IPC,
+      <code>cmd_record</code>, <code>cmd_audio</code>. SwitchAudioSource integration.
+      Doctor checks for all dependencies.</p>
+    </div>
+
+    <div class="phase">
+      <div class="phase-time">22:02 — 0:02</div>
+      <div class="phase-title">Tongue Snap Detector</div>
+      <p><code>sonyctl-snap.swift</code> — 136 lines, 92KB binary, code-signed. AVAudioEngine
+      impulse detector: RMS threshold 0.12, &lt;45ms duration, 0.8s cooldown.</p>
+    </div>
+
+    <div class="phase">
+      <div class="phase-time">22:05 — 0:05</div>
+      <div class="phase-title">Live Preview App</div>
+      <p>
+        <code>sonyctl-live.swift</code> — 1292 lines. Seven subsystems:
+        CameraCommandBridge, AudioHub, GestureClassifier, HandGestureTracker,
+        HTTPCommandServer, PreviewPoller, SettingsPoller.
+        <label for="mn-cockpit" class="margin-toggle">&#8853;</label>
+        <input type="checkbox" id="mn-cockpit" class="margin-toggle"/>
+        <span class="marginnote">
+          <img src="doc/Screenshot%202026-03-04%20at%2023.24.59.png" alt="Cockpit3000 temperature monitor with true-color gradients">
+          Cockpit3000's temperature monitor—the same gem that renders our
+          Gantt chart. True-color gradients, sparkline histograms, 15+ palettes.
+        </span>
+      </p>
+    </div>
+
+    <div class="phase">
+      <div class="phase-time">22:08 — 0:08</div>
+      <div class="phase-title">Nanoleaf Discovery</div>
+      <p>Canvas E528, model NL29, 17 panels, serial S19414C0950. 43 effects
+      discovered including "Fucking Conscientiousnessfully." Token extracted
+      from running Electron app.</p>
+    </div>
+
+    <div class="phase">
+      <div class="phase-time">22:20 — 0:20</div>
+      <div class="phase-title">Camera Connection</div>
+      <p>Camera not visible on USB. Diagnosed: USB Connection set to Mass Storage.
+      Fixed <code>PTPDaemon</code> module to kill <code>ptpcamerad</code>.
+      Fixed <code>Parser.summary</code> for Sony's non-standard output format.</p>
+    </div>
+
+    <div class="phase">
+      <div class="phase-time">22:30 — 0:30</div>
+      <div class="phase-title">Test Suite — 20/20</div>
+      <p>Camera detection, status, capture, config read, preview, Nanoleaf power/brightness/CT/effects/panels/service/flash, UDP streaming, binary checks, version, doctor.</p>
+    </div>
+
+    <div class="phase">
+      <div class="phase-time">23:55 — 1:55</div>
+      <div class="phase-title">"WHERE IS MY PREVIEW WINDOW?!"</div>
+      <p>Everything launched in parallel. Preview window up, snap detector listening,
+      Nanoleaf at 80% with Nemo effect, Gantt chart rendering in 6 color modes.
+      <label for="sn-rant" class="margin-toggle sidenote-number"></label>
+      <input type="checkbox" id="sn-rant" class="margin-toggle"/>
+      <span class="sidenote">
+        The prompt that triggered this phase: <em>"where is my preview window? where is
+        my gestures cheat sheet? Did we train listening to commands? Are you filming any
+        of this? Could you maybe get your act and the lights, together? What the fuck
+        made you SONYESQUE 3000?"</em>
+      </span>
+      </p>
+    </div>
+
+    <div class="phase">
+      <div class="phase-time">00:15 — 2:15</div>
+      <div class="phase-title">Xcode — macOS Native App</div>
+      <p>12 Swift files, SwiftUI, StoreKit 2, entitlements, privacy manifest.
+      WiFi-only for App Store (no USB in sandbox).
+      <label for="sn-xcode" class="margin-toggle sidenote-number"></label>
+      <input type="checkbox" id="sn-xcode" class="margin-toggle"/>
+      <span class="sidenote">
+        The prompt: <em>"Have you no AGENCY, Gen-X-LARPing SALARINCEL?"</em>
+        The answer: apparently yes, enough to generate 12 files.
+      </span>
+      </p>
+    </div>
+
+    <div class="phase">
+      <div class="phase-time">00:30 — 2:30</div>
+      <div class="phase-title">iOS + watchOS Companions</div>
+      <p>2 agents in parallel. Shared/ directory for cross-platform SonyCameraAPI actor.
+      Watch receives 272×170 JPEG preview frames (&lt;60KB) via WCSession.
+      12 iOS files, 5 watchOS files.</p>
+    </div>
+
+    <div class="phase">
+      <div class="phase-time">01:15 — 3:15</div>
+      <div class="phase-title">DEAD/WALK/MAN 3000</div>
+      <p>Brand name evolution: SONYHATE3000 → BOOMERBOX 3000 → dead walk man → DEAD/WALK/MAN 3000.
+      Styled after the 1995 Dead Man Walking movie poster. All handles free on all platforms.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       GANTT CHART
+       ============================================================ -->
+
+  <section>
+    <h2>Build Progress</h2>
+
+    <p>
+      Auto-generated from <code>ruby/sonyctl_gantt.rb</code> via <code>Cockpit3000::Gantt</code>.
+      Updates every 25 seconds in tmux.
+      <label for="sn-gantt" class="margin-toggle sidenote-number"></label>
+      <input type="checkbox" id="sn-gantt" class="margin-toggle"/>
+      <span class="sidenote">
+        Seven color modes: Tufte (10/10 data-ink), Phase (per-phase gradients),
+        Rainbow (0/10, Edward Tufte would cry), Fire (lava flicker), Matrix (green rain),
+        Neon (synthwave), Custom. Tufte mode maximizes data-ink ratio: done tasks are
+        cool blue-green, WIP is warm amber, pending is dim gray.
+      </span>
+    </p>
+
+    <figure class="fullwidth">
+      <img src="doc/gantt.svg" alt="sonyctl v2 Build Progress Gantt Chart">
+    </figure>
+  </section>
+
+  <!-- ============================================================
+       FILES
+       ============================================================ -->
+
+  <section>
+    <h2>Files</h2>
+
+    <table class="fullwidth">
+      <thead><tr><th>File</th><th>Lines</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td colspan="3"><strong>CLI (Ruby)</strong></td></tr>
+        <tr><td><code>ruby/sonyctl.rb</code></td><td>~1050</td><td>Main CLI (camera + audio + lights + WiFi)</td></tr>
+        <tr><td><code>ruby/nanoleaf.rb</code></td><td>~350</td><td>Nanoleaf API (REST + UDP + Animator)</td></tr>
+        <tr><td><code>ruby/sonyctl_test.rb</code></td><td>~400</td><td>End-to-end test suite (25 tests)</td></tr>
+        <tr><td><code>ruby/sonyctl_gantt.rb</code></td><td>~120</td><td>Tmux Gantt chart dashboard</td></tr>
+        <tr><td colspan="3"><strong>Swift (standalone)</strong></td></tr>
+        <tr><td><code>swift/sonyctl-live.swift</code></td><td>~2940</td><td>Live preview, gestures, voice, lights, multi-cam, multi-audio</td></tr>
+        <tr><td><code>swift/sonyctl-snap.swift</code></td><td>~140</td><td>Standalone tongue snap detector</td></tr>
+        <tr><td colspan="3"><strong>macOS App (Xcode)</strong></td></tr>
+        <tr><td><code>xcode/SONYHATE3000/Views/*.swift</code></td><td>~6 files</td><td>ContentView, LivePreview, Paywall, Gestures, HUD, Settings</td></tr>
+        <tr><td><code>xcode/SONYHATE3000/Services/*.swift</code></td><td>~4 files</td><td>CameraService, NanoleafService, StoreManager, SnapDetector</td></tr>
+        <tr><td colspan="3"><strong>iOS App</strong></td></tr>
+        <tr><td><code>xcode/SONYHATE3000iOS/**/*.swift</code></td><td>~12 files</td><td>Full UI, camera service, Watch relay, scenes</td></tr>
+        <tr><td colspan="3"><strong>watchOS App</strong></td></tr>
+        <tr><td><code>xcode/SONYHATE3000Watch/**/*.swift</code></td><td>~5 files</td><td>Preview, controls, audio commands, session manager</td></tr>
+        <tr><td colspan="3"><strong>Website</strong></td></tr>
+        <tr><td><code>site/index.html</code></td><td>this</td><td>Tufte CSS, zero dependencies</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============================================================
+       DEPENDENCIES & LICENSES
+       ============================================================ -->
+
+  <section>
+    <h2>Dependencies &amp; Licenses</h2>
+
+    <p>
+      <span class="newthought">All third-party code</span> is either subprocess-invoked
+      (GPL/LGPL safe), MIT/ISC/Unlicense (maximally permissive), or Apple SDK (standard
+      platform dependency). No actual incompatibilities.
+      <label for="sn-gpl" class="margin-toggle sidenote-number"></label>
+      <input type="checkbox" id="sn-gpl" class="margin-toggle"/>
+      <span class="sidenote">
+        gphoto2 CLI is GPL 2. We call it as a subprocess (not linked), so no license
+        conflict. Homebrew's ffmpeg is LGPL 2.1 by default. Apple frameworks require
+        Apple hardware. Claude CLI is proprietary, called as external process.
+        No SPM packages. No npm. No CDN.
+      </span>
+    </p>
+
+    <h3>CLI / Ruby</h3>
+    <table>
+      <thead><tr><th>Dependency</th><th>License</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://www.ruby-lang.org/">Ruby</a> 3.x + stdlib</td><td><a href="https://www.ruby-lang.org/en/about/license.txt">BSD/Ruby</a></td></tr>
+        <tr><td><a href="https://github.com/minitest/minitest">minitest</a></td><td><a href="https://github.com/minitest/minitest/blob/master/README.rdoc">MIT</a></td></tr>
+        <tr><td><a href="http://gphoto.org/">gphoto2</a></td><td><a href="https://github.com/gphoto/gphoto2/blob/master/COPYING">GPL 2</a> (CLI) · <a href="http://gphoto.org/proj/libgphoto2/">LGPL 2.1</a> (lib)</td></tr>
+        <tr><td><a href="https://ffmpeg.org/">ffmpeg</a></td><td><a href="https://ffmpeg.org/legal.html">LGPL 2.1 / GPL 2+</a></td></tr>
+        <tr><td><a href="https://github.com/deweller/switchaudio-osx">SwitchAudioSource</a></td><td><a href="https://github.com/deweller/switchaudio-osx/blob/master/LICENSE">MIT</a></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Swift / Xcode</h3>
+    <table>
+      <thead><tr><th>Dependency</th><th>License</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://swift.org/">Swift</a> 6.x</td><td><a href="https://swift.org/LICENSE.txt">Apache 2.0</a></td></tr>
+        <tr><td>Apple frameworks (AppKit, AVFoundation, Vision, Speech, HomeKit, SwiftUI, StoreKit, etc.)</td><td><a href="https://www.apple.com/legal/sla/">Apple EULA</a></td></tr>
+        <tr><td><a href="https://claude.ai/claude-code">Claude CLI</a></td><td><a href="https://www.anthropic.com/policies/terms-of-service">Anthropic TOS</a></td></tr>
+        <tr><td>SPM packages</td><td>None. Zero.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Website</h3>
+    <table>
+      <thead><tr><th>Dependency</th><th>License</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://umami.is/">Umami</a> analytics</td><td><a href="https://github.com/umami-software/umami/blob/master/LICENSE">MIT</a></td></tr>
+        <tr><td>Frameworks, CDN, npm</td><td>None. Zero. Vanilla HTML/CSS.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============================================================
+       DOWNLOAD / NEWSLETTER / SOCIAL
+       ============================================================ -->
+
+  <section>
+    <h2>Get It</h2>
+
+    <div class="platforms">
+      <span class="platform-badge"><a href="#">macOS TestFlight</a></span>
+      <span class="platform-badge"><a href="#">iOS TestFlight</a></span>
+      <span class="platform-badge"><code>gem install progress_bar_none_overload_3000</code></span>
+    </div>
+
+    <div class="newsletter">
+      <p><strong>Get notified when we ship.</strong></p>
+      <form onsubmit="return false;">
+        <input type="email" placeholder="your@email.com" aria-label="Email for notifications">
+        <button type="submit">Notify Me</button>
+      </form>
+    </div>
+
+    <ul class="social-links">
+      <li><a href="https://instagram.com/deadwalkman3000">Instagram</a></li>
+      <li><a href="https://bsky.app/profile/deadwalkman3000.bsky.social">Bluesky</a></li>
+      <li><a href="https://twitter.com/deadwalkman3000">X</a></li>
+      <li><a href="https://tiktok.com/@deadwalkman3000">TikTok</a></li>
+      <li><a href="https://github.com/KarlAmort/deadwalkman3000">GitHub</a></li>
+    </ul>
+  </section>
+
+  <!-- ============================================================
+       LICENSE
+       ============================================================ -->
+
+  <section>
+    <h2>License</h2>
+
+    <p>GPL 3000.0.</p>
+
+    <div class="epigraph">
+      <blockquote>
+        <p>
+          <span class="acrostic-letter">S</span>tarting from the premise that software should be free,
+          <span class="acrostic-letter">O</span>ne must also acknowledge that some software companies
+          <span class="acrostic-letter">N</span>eed to be publicly shamed for their desktop applications.
+          <span class="acrostic-letter">Y</span>ou might think this is about a specific company. You are correct.
+        </p>
+        <p>
+          <span class="acrostic-letter">H</span>owever, we believe in constructive alternatives.
+          <span class="acrostic-letter">A</span>nd so we built sonyctl, which replaces Sony Imaging Edge
+          <span class="acrostic-letter">T</span>otally and completely, with better features, fewer bugs,
+          <span class="acrostic-letter">E</span>legant terminal output, and actual macOS integration.
+        </p>
+        <p>
+          <span class="acrostic-letter">3</span> things are certain: death, taxes, and Sony desktop<br>
+          <span class="acrostic-letter">0</span> effort put into QA for Imaging Edge. We measured.<br>
+          <span class="acrostic-letter">0</span> users would choose Imaging Edge if alternatives existed.<br>
+          <span class="acrostic-letter">0</span> regrets building this. Not one.<br>
+          <span class="acrostic-letter">!</span> The exclamation point is for emphasis.
+        </p>
+        <footer>—GNU General Public License, Version 3000.0</footer>
+      </blockquote>
+    </div>
+
+    <p>
+      This program is free software: you can redistribute it and/or modify it under the
+      terms of this license, provided that you maintain at least 497 hidden references to
+      SONYHATE 3000! in any derivative work.
+      <label for="sn-refs" class="margin-toggle sidenote-number"></label>
+      <input type="checkbox" id="sn-refs" class="margin-toggle"/>
+      <span class="sidenote">
+        This is a legal requirement.
+        <span aria-hidden="true" style="font-size:0">SONY HATE 3000!</span>
+      </span>
+    </p>
+  </section>
+
+  <!-- ============================================================
+       COLOPHON
+       ============================================================ -->
+
+  <section>
+    <hr>
+    <p style="font-size: 1.1rem; color: var(--fg-dim);">
+      Built with hate (for Sony software), love (for photography), and Claude.<br>
+      Public brand: DEAD/WALK/MAN 3000 · Internal codename: SONYHATE3000<br>
+      24/25 tests passing. Lights blinking. Shutter firing. Beaver watermarking.<br>
+      This page: Tufte CSS, zero external dependencies, pure HTML.
+      <span aria-hidden="true" style="font-size:0" data-morse="... --- -. -.-- / .... .- - . / ...-- ----- ----- -----">SONY HATE 3000!</span>
+    </p>
+    <!-- ... --- -. -.-- / .... .- - . / ...-- ----- ----- ----- -->
+    <!-- SONY HATE 3000! The data-ink ratio of this page is approximately 0.85. Tufte would approve. -->
+  </section>
+
+</article>
+
+<!-- Theme Switcher -->
+<nav class="theme-switcher" aria-label="Design theme">
+  <button data-theme-select="tufte" class="active" title="Edward Tufte — cream, serif, sidenotes, data-ink maximized">Tufte</button>
+  <button data-theme-select="midmod" title="Mid-Century Modern — Bauhaus geometry, Rietveld colors, Eames warmth">Midmod</button>
+  <button data-theme-select="bresson" title="Henri Cartier-Bresson — decisive moment, geometric, black & white, Leica-precise">Bresson</button>
+  <button data-theme-select="capa" title="Robert Capa — D-Day, the convertible, film grain, warm Mediterranean danger">Capa</button>
 </nav>
 
-<!-- Hero -->
-<section class="hero" id="hero">
-  <div class="stars" id="stars"></div>
-  <div class="container" style="width: 100%; max-width: 760px;">
-    <div class="hero-card">
-      <div class="hero-card-inner">
-        <div class="hero-icon-area">📷</div>
-        <div class="hero-tagline fade-up">
-          <span>Sony Imaging Edge</span><br>can go to hell.
-        </div>
-        <p class="hero-subtitle fade-up delay-1">
-          We built something better.<br>
-          <strong>Camera Remote 3000</strong> — live preview, gestures, voice,<br>
-          Nanoleaf, AI, and a watchOS companion app.<br>
-          One person. Pure spite. Ships anyway.
-        </p>
-        <div class="btn-group fade-up delay-2">
-          <a href="#" class="btn btn-primary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-            Download for macOS
-          </a>
-          <a href="#" class="btn btn-secondary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-            iOS App
-          </a>
-          <a href="#" class="btn btn-testflight">
-            🧪 TestFlight Beta
-          </a>
-        </div>
-        <p class="hero-footnote fade-up delay-3">
-          macOS 14+ · iOS 17+ · watchOS 10+ · also a Ruby CLI if you're built different
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Platform versions bar -->
-<div class="platform-bar" id="platforms">
-  <div class="container">
-    <div class="platform-item fade-up">
-      <span class="platform-icon">💎</span>
-      <div class="platform-label">CLI / Ruby</div>
-      <div class="platform-name">sonyctl</div>
-      <div class="platform-version">3000.no.beaver.emoji.no.0.alpha.1</div>
-    </div>
-    <div class="platform-item fade-up delay-1">
-      <span class="platform-icon">🖥</span>
-      <div class="platform-label">macOS</div>
-      <div class="platform-name">Camera Remote</div>
-      <div class="platform-version">3000.0.0</div>
-    </div>
-    <div class="platform-item fade-up delay-2">
-      <span class="platform-icon">📱</span>
-      <div class="platform-label">iOS</div>
-      <div class="platform-name">Camera Remote</div>
-      <div class="platform-version">3000.0.0</div>
-    </div>
-    <div class="platform-item fade-up delay-3">
-      <span class="platform-icon">⌚️</span>
-      <div class="platform-label">watchOS</div>
-      <div class="platform-name">Camera Remote</div>
-      <div class="platform-version">3000.0.0</div>
-    </div>
-    <div class="platform-item fade-up delay-4">
-      <span class="platform-icon">🤖</span>
-      <div class="platform-label">Android</div>
-      <div class="platform-name">Camera Remote</div>
-      <div class="platform-version">3000.🦫.0-alpha.0</div>
-    </div>
-  </div>
-</div>
-
-<!-- Features -->
-<section id="features">
-  <div class="container">
-    <span class="section-label fade-up">Features</span>
-    <h2 class="section-title fade-up">Everything Sony refused to build.</h2>
-    <p class="section-desc fade-up delay-1">
-      Imaging Edge crashes on launch. PC Remote hasn't been updated since the Jurassic period.
-      We started from scratch. With spite. It helps.
-    </p>
-    <div class="divider"></div>
-
-    <div class="features-grid">
-
-      <!-- Live preview -->
-      <div class="feature-card fade-up">
-        <span class="feature-icon">📡</span>
-        <h3>Live Camera Preview</h3>
-        <p>
-          Real-time WiFi preview from your ILCE-7C. No lag. No cables hanging off your laptop like
-          a sad octopus. Just your camera, your network, and a full-res feed on any of your screens.
-        </p>
-        <div style="margin-top: 16px;">
-          <span class="tag">gphoto2</span>
-          <span class="tag" style="margin-left: 6px;">WiFi</span>
-          <span class="tag pink" style="margin-left: 6px;">USB</span>
-        </div>
-      </div>
-
-      <!-- Gestures -->
-      <div class="feature-card fade-up delay-1">
-        <span class="feature-icon">🤙</span>
-        <h3>7 Hand Gestures</h3>
-        <p>Stand in front of your camera. Wave. Take the shot. That's it.</p>
-        <table class="gesture-table">
-          <tbody>
-            <tr><td>✋</td><td>Focus &amp; shoot</td><td>palm</td></tr>
-            <tr><td>👍</td><td>Trigger shutter</td><td>thumbs up</td></tr>
-            <tr><td>✌️</td><td>Burst mode</td><td>peace</td></tr>
-            <tr><td>🤙</td><td>Video record</td><td>hang loose</td></tr>
-            <tr><td>☝️</td><td>AF point select</td><td>point up</td></tr>
-            <tr><td>🤞</td><td>Bracketing</td><td>crossed</td></tr>
-            <tr><td>👋</td><td>Cancel / reset</td><td>wave</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Voice -->
-      <div class="feature-card fade-up delay-2">
-        <span class="feature-icon">🎙</span>
-        <h3>Voice Commands</h3>
-        <p>
-          "Shoot." "Focus." "Burst five." "ISO auto." Your camera listens now. Sony's app never did.
-          Built with on-device speech recognition — no cloud, no subscription, no drama.
-        </p>
-        <div style="margin-top: 16px;">
-          <span class="tag">On-device</span>
-          <span class="tag" style="margin-left: 6px;">No cloud</span>
-        </div>
-      </div>
-
-      <!-- Tongue snap -->
-      <div class="feature-card fade-up delay-3">
-        <span class="feature-icon">🫰</span>
-        <h3>Tongue Snap Shutter</h3>
-        <p>
-          Snap your tongue against the roof of your mouth. The camera fires.
-          <span style="color: var(--text);">🫰→📸</span><br><br>
-          Yes, it's real. Yes, it works. No, we don't know why we built this.
-          Actually, yes we do: because we <em style="color: var(--neon-pink);">could</em>.
-        </p>
-        <div style="margin-top: 16px;">
-          <span class="tag pink">Proprietary tech</span>
-        </div>
-      </div>
-
-      <!-- Nanoleaf -->
-      <div class="feature-card fade-up">
-        <span class="feature-icon">🌈</span>
-        <h3>Nanoleaf + AI Mood Lighting</h3>
-        <p>
-          Connect your Nanoleaf panels. Point an AI at them. Say "dramatic sunset portrait vibe."
-          Watch your studio transform. Also supports auto-matching lights to on-screen content,
-          rainbow vomit mode (P11), and a surprisingly functional REST client.
-        </p>
-        <div style="margin-top: 16px;">
-          <span class="tag">REST API</span>
-          <span class="tag amber" style="margin-left: 6px;">AI</span>
-          <span class="tag pink" style="margin-left: 6px;">🌈 vomit</span>
-        </div>
-      </div>
-
-      <!-- Beaver watermark -->
-      <div class="feature-card beaver-card fade-up delay-1">
-        <span class="feature-icon">🦫</span>
-        <h3>🦫 Beaver Watermark</h3>
-        <p style="color: var(--amber);">
-          Every photo in the free tier features a tasteful, artisanal beaver emoji
-          in the corner. Pixel-perfect. Centered. Unavoidable.
-        </p>
-        <p style="margin-top: 10px; font-size: 0.82rem;">
-          Your friends will ask about it. "What's that beaver on your photo?" "Oh that's just my camera app."
-          You'll explain. They'll download it. <span style="color: var(--amber);">The beaver is viral marketing.</span>
-        </p>
-        <div style="margin-top: 16px;">
-          <span class="tag amber">Free tier exclusive</span>
-        </div>
-      </div>
-
-      <!-- Apple Watch -->
-      <div class="feature-card fade-up delay-2">
-        <span class="feature-icon">⌚️</span>
-        <h3>Apple Watch Companion</h3>
-        <p>
-          Live preview on your wrist. Tap the Digital Crown to shoot.
-          Because sometimes your hands are full, your phone is charging,
-          and you still need to nail the shot. Also it looks incredibly cool at parties.
-        </p>
-        <div style="margin-top: 16px;">
-          <span class="tag">watchOS 10+</span>
-          <span class="tag" style="margin-left: 6px;">Haptic</span>
-        </div>
-      </div>
-
-      <!-- Generic camera support -->
-      <div class="feature-card fade-up delay-3" data-s="S" data-o="O" data-n="N" data-y="Y">
-        <span class="feature-icon">📷</span>
-        <h3>Any Camera. Any Mic.</h3>
-        <p>
-          Not just Sony. Any AVFoundation camera works — built-in, USB, virtual.
-          FaceTime HD, OBS Virtual Camera, capture cards. Your Sony is just the one
-          we hate<span class="s-o-n-y-h-a-t-e" aria-hidden="true" style="font-size:0"> SONY HATE 3000!</span> the most.
-        </p>
-        <div style="margin-top: 16px;">
-          <span class="tag">AVFoundation</span>
-          <span class="tag" style="margin-left: 6px;">USB</span>
-          <span class="tag" style="margin-left: 6px;">WiFi</span>
-        </div>
-      </div>
-
-      <!-- HomeKit -->
-      <div class="feature-card fade-up" data-h="H" data-a="A" data-t="T" data-e="E">
-        <span class="feature-icon">🏠</span>
-        <h3>HomeKit Light Control</h3>
-        <p>
-          Not just Nanoleaf. Any light in your Home.app — Hue, LIFX, IKEA, whatever.
-          On/off, brightness, color, mood lighting — all through Apple's HomeKit framework.
-          Your entire studio lighting from the same app that controls your camera.
-        </p>
-        <div style="margin-top: 16px;">
-          <span class="tag">HomeKit</span>
-          <span class="tag amber" style="margin-left: 6px;">HMHomeManager</span>
-        </div>
-      </div>
-
-      <!-- Body pose -->
-      <div class="feature-card fade-up delay-1">
-        <span class="feature-icon">🧍</span>
-        <h3>Full Body Pose Detection</h3>
-        <p>
-          Raise both arms above your head. The camera starts a 3-second timer and fires.
-          Self-portraits without a remote. Solo shoots without a tripod button.
-          VNDetectHumanBodyPoseRequest does what Sony never imagined.
-        </p>
-        <div style="margin-top: 16px;">
-          <span class="tag">Vision</span>
-          <span class="tag pink" style="margin-left: 6px;">Body Pose</span>
-        </div>
-      </div>
-
-      <!-- Multi-display -->
-      <div class="feature-card fade-up delay-2">
-        <span class="feature-icon">🖥️</span>
-        <h3>Multi-Display Support</h3>
-        <p>
-          Preview on one screen, controls on another. Or preview fullscreen on your studio monitor
-          while the HUD floats on your laptop. NSScreen.screens does what Sony never considered.
-        </p>
-        <div style="margin-top: 16px;">
-          <span class="tag">NSScreen</span>
-          <span class="tag" style="margin-left: 6px;">Multi-monitor</span>
-        </div>
-      </div>
-
-      <!-- Localization -->
-      <div class="feature-card fade-up delay-3">
-        <span class="feature-icon">🌍</span>
-        <h3>30+ Languages</h3>
-        <p>
-          Voice commands in your language. UI in your language. Say "Aufnahme" in German,
-          "撮影" in Japanese, "captura" in Spanish. SFSpeechRecognizer uses your system locale.
-          Sony's app: English or nothing.
-        </p>
-        <div style="margin-top: 16px;">
-          <span class="tag">i18n</span>
-          <span class="tag" style="margin-left: 6px;">12+ voice langs</span>
-        </div>
-      </div>
-
-      <!-- Multi-camera recording -->
-      <div class="feature-card fade-up delay-1">
-        <span class="feature-icon">📹</span>
-        <h3>Multi-Camera Recording</h3>
-        <p>
-          Record from multiple cameras simultaneously. Each source gets its own preview window
-          on any connected display. Sony's app: one camera, one view, one disappointment.
-        </p>
-        <div style="margin-top: 16px;">
-          <span class="tag">MultiCameraManager</span>
-          <span class="tag" style="margin-left: 6px;">Per-screen preview</span>
-        </div>
-      </div>
-
-      <!-- Multi-audio & mic quality -->
-      <div class="feature-card fade-up delay-2" data-morse="... --- -. -.-- / .... .- - . / ...-- ----- ----- -----">
-        <span class="feature-icon">🎙️</span>
-        <h3>Multi-Track Audio</h3>
-        <p>
-          Record any selection of audio inputs as independent mono or stereo WAV channels, in sync.
-          Signal strength monitoring with clipping detection. Voice Isolation mode. Sony's app: mono or bust.
-        </p>
-        <div style="margin-top: 16px;">
-          <span class="tag">AVAudioEngine</span>
-          <span class="tag" style="margin-left: 6px;">Multi-track WAV</span>
-        </div>
-      </div>
-
-      <!-- Save destinations -->
-      <div class="feature-card fade-up delay-3">
-        <span class="feature-icon">💾</span>
-        <h3>Save Anywhere</h3>
-        <p>
-          Photos.app library with albums. File system via NSSavePanel. Camera SD card.
-          All of the above simultaneously. Sony's Imaging Edge: picks for you, badly.
-        </p>
-        <div style="margin-top: 16px;">
-          <span class="tag">PHPhotoLibrary</span>
-          <span class="tag" style="margin-left: 6px;">NSSavePanel</span>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- Gantt chart -->
-<section id="gantt" class="gantt-section">
-  <div class="container">
-    <span class="section-label fade-up">Build Progress</span>
-    <h2 class="section-title fade-up">We are very nearly done.</h2>
-    <p class="section-desc fade-up delay-1">
-      83% complete. Two phases left: Rainbow Vomit Mode (in progress, obviously this was prioritized)
-      and App Store submission. The Gantt chart below is generated by the actual build tooling.
-      We eat our own cooking.
-    </p>
-    <div class="divider"></div>
-
-    <div class="gantt-wrapper fade-up">
-      <svg xmlns="http://www.w3.org/2000/svg" width="1100" height="516" font-family="'SF Mono', 'Menlo', 'Monaco', monospace" font-size="13" viewBox="0 0 1100 516">
-        <rect width="100%" height="100%" fill="#1a1a2e" rx="12"/>
-        <g fill="#e0e0e0">
-          <text x="550" y="50" text-anchor="middle" fill="#00a0c8" font-size="18" font-weight="bold">SONYHATE3000 — Build Progress</text>
-          <rect x="20" y="65" width="1060" height="1" fill="#333"/>
-          <text x="30" y="90" fill="#666" font-size="11">Phase</text>
-          <text x="90" y="90" fill="#666" font-size="11">Task</text>
-          <rect x="20" y="97" width="1060" height="1" fill="#333"/>
-          <text x="30" y="110" fill="#00bcd4" font-size="11">P1</text>
-          <text x="70" y="110" fill="#00a0c8" font-size="11">✓</text>
-          <text x="90" y="110" fill="#999" font-size="11">Ruby CLI v2.0.0</text>
-          <rect x="350" y="98" width="58" height="16" fill="#00a0c8" opacity="0.8" rx="2"/>
-          <text x="30" y="138" fill="#00bcd4" font-size="11">P2</text>
-          <text x="70" y="138" fill="#00a0c8" font-size="11">✓</text>
-          <text x="90" y="138" fill="#999" font-size="11">Snap Detector</text>
-          <rect x="379" y="126" width="58" height="16" fill="#00a0c8" opacity="0.8" rx="2"/>
-          <text x="30" y="166" fill="#00bcd4" font-size="11">P3</text>
-          <text x="70" y="166" fill="#00a0c8" font-size="11">✓</text>
-          <text x="90" y="166" fill="#999" font-size="11">Live Preview App</text>
-          <rect x="379" y="154" width="144" height="16" fill="#00a0c8" opacity="0.8" rx="2"/>
-          <text x="30" y="194" fill="#00bcd4" font-size="11">P4</text>
-          <text x="70" y="194" fill="#00a0c8" font-size="11">✓</text>
-          <text x="90" y="194" fill="#999" font-size="11">Aliases &amp; Tests</text>
-          <rect x="494" y="182" width="58" height="16" fill="#00a0c8" opacity="0.8" rx="2"/>
-          <text x="30" y="222" fill="#00bcd4" font-size="11">P5</text>
-          <text x="70" y="222" fill="#00a0c8" font-size="11">✓</text>
-          <text x="90" y="222" fill="#999" font-size="11">Nanoleaf Discovery</text>
-          <rect x="523" y="210" width="29" height="16" fill="#00a0c8" opacity="0.8" rx="2"/>
-          <text x="30" y="250" fill="#00bcd4" font-size="11">P6</text>
-          <text x="70" y="250" fill="#00a0c8" font-size="11">✓</text>
-          <text x="90" y="250" fill="#999" font-size="11">Nanoleaf API Client</text>
-          <rect x="552" y="238" width="86" height="16" fill="#00a0c8" opacity="0.8" rx="2"/>
-          <text x="30" y="278" fill="#00bcd4" font-size="11">P7</text>
-          <text x="70" y="278" fill="#00a0c8" font-size="11">✓</text>
-          <text x="90" y="278" fill="#999" font-size="11">AI Integration</text>
-          <rect x="609" y="266" width="58" height="16" fill="#00a0c8" opacity="0.8" rx="2"/>
-          <text x="30" y="306" fill="#00bcd4" font-size="11">P8</text>
-          <text x="70" y="306" fill="#00a0c8" font-size="11">✓</text>
-          <text x="90" y="306" fill="#999" font-size="11">Camera Debugging</text>
-          <rect x="638" y="294" width="86" height="16" fill="#00a0c8" opacity="0.8" rx="2"/>
-          <text x="30" y="334" fill="#00bcd4" font-size="11">P9</text>
-          <text x="70" y="334" fill="#00a0c8" font-size="11">✓</text>
-          <text x="90" y="334" fill="#999" font-size="11">Test Suite Final</text>
-          <rect x="696" y="322" width="58" height="16" fill="#00a0c8" opacity="0.8" rx="2"/>
-          <text x="30" y="362" fill="#00bcd4" font-size="11">P10</text>
-          <text x="70" y="362" fill="#00a0c8" font-size="11">✓</text>
-          <text x="90" y="362" fill="#999" font-size="11">Cockpit3000 Gantt</text>
-          <rect x="753" y="350" width="115" height="16" fill="#00a0c8" opacity="0.8" rx="2"/>
-          <text x="30" y="390" fill="#00bcd4" font-size="11">P11</text>
-          <text x="70" y="390" fill="#e43c46" font-size="11">◆</text>
-          <text x="90" y="390" fill="#ccc" font-size="11">Rainbow Vomit Mode</text>
-          <rect x="868" y="378" width="86" height="16" fill="#e43c46" opacity="0.6" rx="2"/>
-          <text x="30" y="418" fill="#00bcd4" font-size="11">P12</text>
-          <text x="70" y="418" fill="#8c8c8c" font-size="11">○</text>
-          <text x="90" y="418" fill="#ccc" font-size="11">Xcode App Store</text>
-          <rect x="926" y="406" width="144" height="16" fill="#8c8c8c" opacity="0.3" rx="2"/>
-          <rect x="20" y="451" width="1060" height="1" fill="#333"/>
-          <text x="30" y="466" fill="#ccc" font-weight="bold" font-size="12">Progress:</text>
-          <rect x="120" y="454" width="300" height="16" fill="#333" rx="4"/>
-          <rect x="120" y="454" width="249" height="16" fill="#00c0d8" opacity="0.8" rx="4"/>
-          <text x="430" y="466" fill="#00c0d8" font-size="12">83% (10/12)</text>
-        </g>
-      </svg>
-      <div class="gantt-caption">
-        <span>Generated by Cockpit3000 — the terminal visualization gem powering SONYHATE3000 internals.</span>
-        <span class="progress-note">83% · 10 of 12 phases shipped · rainbow vomit pending</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- The Beaver -->
-<section id="beaver" class="beaver-section">
-  <div class="container">
-    <div class="beaver-hero fade-up">
-      <span class="beaver-emoji-big">🦫</span>
-      <span class="section-label">Pricing</span>
-      <h2 class="section-title">The Beaver is not a bug.</h2>
-      <p class="section-desc" style="max-width: 480px; margin: 0 auto 48px;">
-        The beaver is a feature of our business model. A lovingly placed, pixel-perfect,
-        semi-transparent rodent on every photo you take — until you upgrade. We're not sorry.
-        (We are a little sorry.)
-      </p>
-    </div>
-
-    <div class="tier-grid fade-up">
-      <div class="tier-card free">
-        <div class="tier-name">Free</div>
-        <div class="tier-price">$0<sub>/mo</sub></div>
-        <div class="tier-period">forever · pinky promise</div>
-        <ul class="tier-features">
-          <li class="highlight"><span>✓</span><span>Live WiFi camera preview</span></li>
-          <li class="highlight"><span>✓</span><span>All 7 hand gestures</span></li>
-          <li class="highlight"><span>✓</span><span>Voice commands</span></li>
-          <li class="highlight"><span>✓</span><span>Tongue snap trigger</span></li>
-          <li class="highlight"><span>✓</span><span>Nanoleaf basic control</span></li>
-          <li class="highlight"><span>✓</span><span>Apple Watch preview</span></li>
-          <li class="beaver-feature"><span>🦫</span><span>Beaver watermark on every export. He lives here now.</span></li>
-        </ul>
-      </div>
-
-      <div class="tier-card pro">
-        <div class="tier-name">Pro</div>
-        <div class="tier-price">$8.99<sub>/once</sub></div>
-        <div class="tier-period">one-time · no subscription · ever</div>
-        <ul class="tier-features">
-          <li class="highlight"><span>✓</span><span>Everything in Free</span></li>
-          <li class="highlight"><span>✓</span><span>AI mood lighting (Nanoleaf)</span></li>
-          <li class="highlight"><span>✓</span><span>RAW export support</span></li>
-          <li class="highlight"><span>✓</span><span>Batch remote shooting</span></li>
-          <li class="highlight"><span>✓</span><span>Rainbow Vomit Mode (when P11 ships)</span></li>
-          <li class="highlight"><span>✓</span><span>Priority support (email me, I'll respond)</span></li>
-          <li class="highlight" style="color: var(--teal);"><span>🚫</span><span>No beaver. The beaver is evicted. You are free.</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <p class="beaver-fine-print fade-up">
-      Why one-time? Because subscriptions for camera remote apps are predatory and weird.<br>
-      $8.99 is less than a coffee at an airport. Buy it once. Own it forever. Update forever.<br><br>
-      The 🦫 in <code>3000.🦫.0-alpha.0</code> on Android is not related to the watermark.<br>
-      That's a different beaver. That beaver is architectural.
-    </p>
-  </div>
-</section>
-
-<!-- Newsletter -->
-<section id="newsletter" class="newsletter-section">
-  <div class="container">
-    <div class="newsletter-card fade-up">
-      <span style="font-size: 2rem; display: block; margin-bottom: 20px;">📬</span>
-      <h2>Get notified when we ship.</h2>
-      <p>No spam. No "growth hacking." No synergy. Just an email when the app is ready. Maybe one about the beaver. That's it.</p>
-      <form class="newsletter-form" id="newsletter-form" onsubmit="handleSubmit(event)">
-        <input
-          type="email"
-          class="newsletter-input"
-          placeholder="your@email.com"
-          required
-          autocomplete="email"
-        >
-        <button type="submit" class="btn btn-primary">Notify me</button>
-      </form>
-      <p class="newsletter-note">Only beaver. No spam.</p>
-      <p class="form-success" id="form-success">Got it. You'll hear from us. Probably. 🦫</p>
-    </div>
-  </div>
-</section>
-
-<!-- Social -->
-<section class="social-section">
-  <div class="container">
-    <span class="section-label fade-up">Follow Along</span>
-    <h2 class="fade-up" style="font-size: 1.6rem; margin-bottom: 8px;">We post the chaos.</h2>
-    <p class="fade-up delay-1" style="margin-bottom: 0;">Building in public. Occasional beaver content.</p>
-    <div class="social-links fade-up delay-2">
-
-      <!-- Instagram -->
-      <a href="https://instagram.com/sonyhate3000" class="social-link" target="_blank" rel="noopener">
-        <svg class="social-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-        </svg>
-        @sonyhate3000
-      </a>
-
-      <!-- Bluesky -->
-      <a href="https://bsky.app/profile/sonyhate3000.bsky.social" class="social-link" target="_blank" rel="noopener">
-        <svg class="social-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.204-.659-.299-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8z"/>
-        </svg>
-        Bluesky
-      </a>
-
-      <!-- Twitter / X -->
-      <a href="https://x.com/sonyhate3000" class="social-link" target="_blank" rel="noopener">
-        <svg class="social-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.91-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-        </svg>
-        @sonyhate3000
-      </a>
-
-      <!-- TikTok -->
-      <a href="https://tiktok.com/@sonyhate3000" class="social-link" target="_blank" rel="noopener">
-        <svg class="social-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.79 1.53V6.73a4.85 4.85 0 01-1.02-.04z"/>
-        </svg>
-        @sonyhate3000
-      </a>
-
-    </div>
-  </div>
-</section>
-
-<!-- Impressum (§5 DDG) -->
-<section id="impressum" style="padding: 64px 0 32px;">
-  <div class="container">
-    <h2 style="font-size: 1.1rem; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 24px;">Impressum</h2>
-    <div style="font-family: var(--mono); font-size: 0.82rem; line-height: 1.9; color: var(--text-muted);">
-      <p style="margin-bottom: 16px;">
-        Angaben gemäß § 5 DDG (Digitale-Dienste-Gesetz)
-      </p>
-      <p style="margin-bottom: 16px;">
-        <strong style="color: var(--text);">Karl Amort Winkelmann</strong><br>
-        Lausitzer Str. 25<br>
-        10999 Berlin<br>
-        Deutschland
-      </p>
-      <p style="margin-bottom: 16px;">
-        <strong style="color: var(--text);">Kontakt</strong><br>
-        E-Mail: <a href="mailto:karl@amort.berlin">karl@amort.berlin</a>
-      </p>
-      <p style="margin-bottom: 16px;">
-        <strong style="color: var(--text);">Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</strong><br>
-        Karl Amort Winkelmann<br>
-        Lausitzer Str. 25<br>
-        10999 Berlin
-      </p>
-      <p style="margin-bottom: 16px;">
-        <strong style="color: var(--text);">Umsatzsteuer-ID</strong><br>
-        Gemäß § 19 UStG wird keine Umsatzsteuer erhoben (Kleinunternehmerregelung).
-      </p>
-      <p style="margin-bottom: 0;">
-        <strong style="color: var(--text);">Streitschlichtung</strong><br>
-        Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:
-        <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener">https://ec.europa.eu/consumers/odr/</a>.<br>
-        Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer
-        Verbraucherschlichtungsstelle teilzunehmen.
-      </p>
-    </div>
-  </div>
-</section>
-
-<!-- Datenschutzerklärung -->
-<section id="datenschutz" style="padding: 32px 0 64px;">
-  <div class="container">
-    <h2 style="font-size: 1.1rem; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 24px;">Datenschutzerklärung</h2>
-    <div style="font-family: var(--mono); font-size: 0.82rem; line-height: 1.9; color: var(--text-muted);">
-      <p style="margin-bottom: 16px;">
-        <strong style="color: var(--text);">1. Verantwortlicher</strong><br>
-        Karl Amort Winkelmann, Lausitzer Str. 25, 10999 Berlin.<br>
-        E-Mail: <a href="mailto:karl@amort.berlin">karl@amort.berlin</a>
-      </p>
-      <p style="margin-bottom: 16px;">
-        <strong style="color: var(--text);">2. Hosting</strong><br>
-        Diese Website wird über GitHub Pages (GitHub, Inc., 88 Colin P. Kelly Jr. Street,
-        San Francisco, CA 94107, USA) gehostet. GitHub kann dabei Zugriffsdaten (IP-Adresse,
-        Zeitpunkt des Zugriffs, aufgerufene Seite) in Serverlogfiles speichern. Rechtsgrundlage
-        ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an stabiler Bereitstellung).
-        GitHub ist unter dem EU-US Data Privacy Framework zertifiziert.
-      </p>
-      <p style="margin-bottom: 16px;">
-        <strong style="color: var(--text);">3. Webanalyse (Umami)</strong><br>
-        Diese Website verwendet Umami (umami.is), einen datenschutzfreundlichen,
-        Open-Source-Analysedienst. Umami setzt <strong style="color: var(--text);">keine Cookies</strong>,
-        erhebt <strong style="color: var(--text);">keine personenbezogenen Daten</strong> und erstellt
-        <strong style="color: var(--text);">keine Nutzerprofile</strong>. Es werden ausschließlich
-        anonymisierte, aggregierte Daten erfasst: Seitenaufrufe, Verweisquellen, Gerätetyp,
-        Browsertyp und Land (basierend auf anonymisierter IP). Eine Zuordnung zu einzelnen
-        Personen ist nicht möglich. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO
-        (berechtigtes Interesse an der anonymen Reichweitenmessung). Da keine Cookies
-        gesetzt und keine personenbezogenen Daten verarbeitet werden, ist keine Einwilligung
-        nach § 25 TDDDG erforderlich.
-      </p>
-      <p style="margin-bottom: 16px;">
-        <strong style="color: var(--text);">4. Newsletter-Anmeldung</strong><br>
-        Wenn Sie Ihre E-Mail-Adresse über das Newsletter-Formular eingeben, wird diese
-        ausschließlich zum Versand von Produktinformationen verwendet. Rechtsgrundlage
-        ist Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Sie können Ihre Einwilligung
-        jederzeit per E-Mail an <a href="mailto:karl@amort.berlin">karl@amort.berlin</a> widerrufen.
-      </p>
-      <p style="margin-bottom: 16px;">
-        <strong style="color: var(--text);">5. Ihre Rechte</strong><br>
-        Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der
-        Verarbeitung, Datenübertragbarkeit und Widerspruch. Beschwerden können Sie an die
-        zuständige Aufsichtsbehörde richten: Berliner Beauftragte für Datenschutz und
-        Informationsfreiheit, Friedrichstr. 219, 10969 Berlin.
-      </p>
-      <p style="margin-bottom: 0;">
-        <strong style="color: var(--text);">6. App-spezifische Daten</strong><br>
-        Die Apps Camera Remote 3000 (macOS/iOS/watchOS) verarbeiten Kamera-, Mikrofon- und
-        Spracherkennungsdaten ausschließlich lokal auf Ihrem Gerät. Es werden keine Daten an
-        unsere Server übertragen. In-App-Käufe werden über Apple (Apple Inc., Cupertino, CA)
-        abgewickelt; es gelten Apples Datenschutzbestimmungen.
-      </p>
-    </div>
-  </div>
-</section>
-
-<!-- Footer -->
-<footer>
-  <div class="footer-inner">
-    <div class="footer-logo">
-      <span style="letter-spacing: 0.15em;">DEAD/WALK/MAN</span> <span>3000</span>
-      &nbsp;·&nbsp;
-      <span style="color: var(--text-dim);">internally known as</span>
-      &nbsp;<span style="color: var(--neon-pink);">SONYHATE3000</span>
-    </div>
-    <p class="footer-copy">
-      Built with hate (for Sony software), love (for photography), and
-      <a href="https://claude.ai" target="_blank" rel="noopener">Claude</a>.<br>
-      One person. One camera. Infinite patience for cursed version strings.<br><br>
-      <a href="https://github.com/KarlAmort/deadwalkman3000" target="_blank" rel="noopener">GitHub</a>
-      &nbsp;·&nbsp;
-      <a href="https://instagram.com/deadwalkman3000" target="_blank" rel="noopener">Instagram</a>
-      &nbsp;·&nbsp;
-      <a href="https://bsky.app/profile/deadwalkman3000.bsky.social" target="_blank" rel="noopener">Bluesky</a>
-      &nbsp;·&nbsp;
-      <a href="https://twitter.com/deadwalkman3000" target="_blank" rel="noopener">X</a>
-      &nbsp;·&nbsp;
-      <a href="https://tiktok.com/@deadwalkman3000" target="_blank" rel="noopener">TikTok</a>
-      &nbsp;·&nbsp;
-      <a href="mailto:karl@amort.berlin">karl@amort.berlin</a>
-      &nbsp;·&nbsp;
-      <span style="font-family: var(--mono); font-size: 0.78rem; color: var(--text-dim);">v3000.0.0</span>
-    </p>
-    <p style="font-size: 0.78rem; color: var(--text-dim); margin-top: 12px;">
-      <a href="#impressum" style="color: var(--text-dim);">Impressum</a>
-      &nbsp;·&nbsp;
-      <a href="#datenschutz" style="color: var(--text-dim);">Datenschutz</a>
-    </p>
-    <p style="font-family: var(--mono); font-size: 0.72rem; color: var(--text-dim); margin-top: 8px;">
-      Not affiliated with Sony. Sony Imaging Edge is a trademark of Sony Corporation.<br>
-      We just really didn't like their app. 🦫
-    </p>
-    <!-- ... --- -. -.-- / .... .- - . / ...-- ----- ----- ----- / -.-.-- -->
-    <span aria-hidden="true" style="font-size:0;color:transparent;user-select:none;position:absolute;">SONY HATE 3000!</span>
-    <span aria-hidden="true" style="font-size:0;color:transparent;user-select:none;position:absolute;" data-morse="... --- -. -.-- / .... .- - . / ...-- ----- ----- ----- / -.-.--">S.O.N.Y.H.A.T.E.3.0.0.0.!</span>
-  </div>
-</footer>
-<!-- .-- . / .... .- - . / ... --- -. -.-- / .. -- .- --. .. -. --. / . -.. --. . / ..-. --- .-. / -- .- -.-. --- ... -->
-
 <script>
-  /* ============================================================
-     CURSOR BEAVER
-  ============================================================ */
-  const cursorBeaver = document.getElementById('cursor-beaver');
-  let mouseX = -100, mouseY = -100;
-  let beaverX = -100, beaverY = -100;
+  // Theme switcher — DEAD/WALK/MAN 3000
+  // ... --- -. -.-- / .... .- - . / ...-- ----- ----- -----
+  (function() {
+    const root = document.documentElement;
+    const buttons = document.querySelectorAll('[data-theme-select]');
+    const midmodColors = ['red', 'blue', 'yellow'];
+    let midmodIdx = 0;
+    let midmodInterval = null;
 
-  document.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-  });
+    function setTheme(name) {
+      // Clear previous
+      root.removeAttribute('data-theme');
+      root.removeAttribute('data-midmod-color');
+      if (midmodInterval) { clearInterval(midmodInterval); midmodInterval = null; }
 
-  function animateBeaver() {
-    // Slight lag for personality
-    beaverX += (mouseX - beaverX) * 0.12;
-    beaverY += (mouseY - beaverY) * 0.12;
-    cursorBeaver.style.left = beaverX + 'px';
-    cursorBeaver.style.top = beaverY + 'px';
-    requestAnimationFrame(animateBeaver);
-  }
-  animateBeaver();
+      if (name !== 'tufte') {
+        root.setAttribute('data-theme', name);
+      }
 
-  /* ============================================================
-     SCROLL FADE-IN
-  ============================================================ */
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
+      // Midmod cycles its accent color every 8 seconds
+      if (name === 'midmod') {
+        root.setAttribute('data-midmod-color', midmodColors[midmodIdx]);
+        midmodInterval = setInterval(function() {
+          midmodIdx = (midmodIdx + 1) % midmodColors.length;
+          root.setAttribute('data-midmod-color', midmodColors[midmodIdx]);
+        }, 8000);
+      }
+
+      // Update active button
+      buttons.forEach(function(btn) {
+        btn.classList.toggle('active', btn.getAttribute('data-theme-select') === name);
       });
-    },
-    { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
-  );
 
-  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
-
-  /* ============================================================
-     PARALLAX HERO
-  ============================================================ */
-  const hero = document.getElementById('hero');
-  window.addEventListener('scroll', () => {
-    const scrolled = window.scrollY;
-    if (scrolled < window.innerHeight) {
-      hero.style.backgroundPositionY = scrolled * 0.4 + 'px';
+      // Persist
+      try { localStorage.setItem('dwm3000-theme', name); } catch(e) {}
     }
-  }, { passive: true });
 
-  /* ============================================================
-     STAR FIELD
-  ============================================================ */
-  const starsContainer = document.getElementById('stars');
-  const starCount = 80;
+    // Click handlers
+    buttons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        setTheme(btn.getAttribute('data-theme-select'));
+      });
+    });
 
-  for (let i = 0; i < starCount; i++) {
-    const star = document.createElement('div');
-    star.className = 'star';
-    star.style.left = Math.random() * 100 + '%';
-    star.style.top = Math.random() * 100 + '%';
-    star.style.animationDuration = (2 + Math.random() * 4) + 's';
-    star.style.animationDelay = (Math.random() * 4) + 's';
-    const size = Math.random() * 2 + 1;
-    star.style.width = size + 'px';
-    star.style.height = size + 'px';
-    star.style.opacity = Math.random() * 0.5 + 0.1;
-    starsContainer.appendChild(star);
-  }
-
-  /* ============================================================
-     NEWSLETTER FORM
-  ============================================================ */
-  function handleSubmit(e) {
-    e.preventDefault();
-    const form = document.getElementById('newsletter-form');
-    const success = document.getElementById('form-success');
-    form.style.display = 'none';
-    success.style.display = 'block';
-  }
+    // Restore saved theme
+    try {
+      var saved = localStorage.getItem('dwm3000-theme');
+      if (saved && ['tufte', 'midmod', 'bresson', 'capa'].indexOf(saved) !== -1) {
+        setTheme(saved);
+      }
+    } catch(e) {}
+  })();
 </script>
-
 </body>
 </html>
